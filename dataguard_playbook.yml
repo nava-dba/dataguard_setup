@@ -11,7 +11,7 @@
 
 - name: Configure Data Guard for 19c
   hosts: all
-  remote_user: {{ db_oracle_user }}
+  remote_user: "{{ db_oracle_user }}"
   gather_facts: false
   vars_files:
     - vars/dataguard/dataguard_vars.yml
