@@ -1,9 +1,8 @@
 # This playbook is used to configure dataguard for 19c.
-#
 # Before executing this playbook, please refer the documentation inside the docs directory.
 #
 # - hosts: all_nodes                     # Provide the name of the target lpar registered in ansible inventory.
-#  remote_user: root                     # This needs to be run by "root" user.
+#  remote_user: oracle                     # This needs to be run by "oracle" user.
 #  gather_facts: False
 #  vars_files:
 #      - vars/dataguard/dataguard_vars.yml  # update all the required variables
@@ -12,7 +11,7 @@
 
 - name: Configure Data Guard for 19c
   hosts: all
-  remote_user: root
+  remote_user: {{ db_oracle_user }}
   gather_facts: false
   vars_files:
     - vars/dataguard/dataguard_vars.yml
