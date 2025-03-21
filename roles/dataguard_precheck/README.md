@@ -15,4 +15,4 @@ Variables are defined at playbooks/vars/dataguard_vars.yml
         name: dataguard_precheck
 
 ## Copyright
-© Copyright IBM Corporation 2020
+© Copyright IBM Corporation 2025

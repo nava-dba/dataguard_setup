@@ -21,7 +21,7 @@
 # grid_asm_flag:             Specify true if ASM is used for storage or false if not used. Default value true
 # ignore_precheck:           Provide true or false based on requirement to continue with warnings. Default value  false .
 # dataguard_protection_mode: Provide data protection modes out of three maximum_availability, maximum_performance, or maximum_protection.
-#                            default to maximum_performance
+#                            default to maximum_performance. Phase 1 rollout is with maximum_performance mode only in this release.
 #
 #                                   |----------------------------------------|---------------------------------|
 #                                   |             Standby Mode	              |        Transport Process        |
@@ -63,6 +63,7 @@ backup_location: /u01/backup
 sys_user: sys
 ignore_precheck: false
 grid_asm_flag: false
+#In this release maximum_performance mode only.
 dataguard_protection_mode: maximum_performance
 
 # Section B - Primary and standby database details

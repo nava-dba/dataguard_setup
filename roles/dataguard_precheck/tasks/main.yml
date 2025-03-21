@@ -1,5 +1,5 @@
 ---
-# Copyright (c) IBM Corporation 2021
+# Copyright (c) IBM Corporation 2025
 # tasks file for dataguard_precheck
 - name: Run initialization tasks
   ansible.builtin.include_tasks: ../../dataguard_precheck/tasks/init.yml

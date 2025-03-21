@@ -15,4 +15,4 @@ dataguard_precheck
         name: sync_gap
 
 ## Copyright
-© Copyright IBM Corporation 2020
+© Copyright IBM Corporation 2025
