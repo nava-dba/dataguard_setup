@@ -16,7 +16,7 @@
 # db_oinstall_group:         Provide the RDBMS software owner's primary group, ex: oinstall.
 # with_backup:               Specify true for Backup-Based (No Target Connection) from external RMAN backup. 
 #                            Specify false for Standby Duplication Using RMAN DUPLICATE...FROM ACTIVE DATABASE. Default value false .
-# backup_location:           Provide backup location available on standby site
+# backup_location:           Provide backup location available on primary and standby site having valid access for db_oracle_user.
 # sys_user:                  Provide the sys user name. Default value sys
 # grid_asm_flag:             Specify true if ASM is used for storage or false if not used. Default value true
 # ignore_precheck:           Provide true or false based on requirement to continue with warnings. Default value  false .
@@ -59,7 +59,7 @@ db_oracle_user: oracle
 grid_user: grid
 db_oinstall_group: oinstall
 with_backup: false
-backup_location: /u01/backup
+backup_location: /u01/backup/orcl
 sys_user: sys
 ignore_precheck: false
 grid_asm_flag: false
