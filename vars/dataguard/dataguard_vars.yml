@@ -70,20 +70,20 @@ dataguard_protection_mode: maximum_performance
 
 databases:  
   primary:
-         db_name: dbcl
-         db_sid: dbcl
-         db_unique_name: dbcl
-         db_service_name: dbcl
+         db_name: orcl
+         db_sid: orcl
+         db_unique_name: orcl
+         db_service_name: orcl
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
          file_dest: /DB01                 # the value of db_create_file_dest db parameter in primary DB
          db_port: 1521
   standby:
-         db_name: dbcl
-         db_sid: dbcl
-         db_unique_name: dbcls
-         db_service_name: dbcls
+         db_name: orcl
+         db_sid: orcl
+         db_unique_name: orcls
+         db_service_name: orcls
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home

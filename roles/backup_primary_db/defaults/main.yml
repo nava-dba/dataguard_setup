@@ -10,3 +10,4 @@ prenfsconfig:
   subdir: ''
 
 ora_version: "19.3.0.0.0"
+primary_cpu_core: 4
