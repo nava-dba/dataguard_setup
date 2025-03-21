@@ -69,7 +69,7 @@
         primary_diskgroup: "{{ standby_diskgroup }}"
 
     - name: Execute Dataguard config script on standby
-      ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"
+      ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh '{{ asm_user_password }}'"
       register: precheck_output
       failed_when: precheck_output.rc != 0
       changed_when: false

@@ -27,7 +27,7 @@ check_existence() {
     
     if [[ "$grid_asm_flag" == "true" ]]; then
         # ASM Disk Group Existence Check
-        exist_check=$(su - {{ grid_user }} -c "sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+        exist_check=$(echo "$1" | su - {{ grid_user }} -c "sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
@@ -66,7 +66,7 @@ check_size() {
 
     if [[ "$grid_asm_flag" == "true" ]]; then
         # ASM Disk Group Available Space Check
-        available_space=$(su - {{ grid_user }} -c "sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+        available_space=$(echo "$1" | su - {{ grid_user }} -c "sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0

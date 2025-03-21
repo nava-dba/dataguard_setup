@@ -130,7 +130,7 @@ SID_LIST_LISTENER =
 EOL
   fi
 
-  su - {{ grid_user }} -c "$GRID_HOME/bin/lsnrctl reload" >> "$MASTER_LOG"
+  echo "$1" | su - {{ grid_user }} -c "$GRID_HOME/bin/lsnrctl reload" >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
     echo "Listener reload successful" | tee -a "$MASTER_LOG"
   else
@@ -138,7 +138,7 @@ EOL
     exit 1
   fi
 
-  su - {{ grid_user }} -c "$GRID_HOME/bin/lsnrctl status" >> "$MASTER_LOG"
+  echo "$1" | su - {{ grid_user }} -c "$GRID_HOME/bin/lsnrctl status" >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
     echo "Listener is running successfully" | tee -a "$MASTER_LOG"
   else
