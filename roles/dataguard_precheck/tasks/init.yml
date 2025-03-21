@@ -27,3 +27,9 @@
     path: "{{ done_dir }}"
     state: "directory"
     mode: '0777'
+
+- name: Create done dir
+  ansible.builtin.file:
+    path: "{{ backup_location }}"
+    state: "directory"
+    mode: '0777'
