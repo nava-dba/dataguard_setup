@@ -14,7 +14,7 @@ if [[ "$(hostname -s)" == "{{ primary_host }}" ]]; then
     export ORACLE_HOME={{ databases.primary.oracle_db_home }}
     export PATH={{ databases.primary.oracle_db_home }}/bin:$PATH
 
-    su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+    sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
@@ -55,7 +55,7 @@ elif [[ "$(hostname -s)" == "{{ standby_host }}" ]]; then
     export ORACLE_HOME={{ databases.standby.oracle_db_home }}
     export PATH={{ databases.standby.oracle_db_home }}/bin:$PATH
 
-    su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+    sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
@@ -72,7 +72,7 @@ SQL
     # Check if MRP process is running, if not, enable it
     if [[ "$MRP_RUNNING" -eq 0 ]]; then
         echo "MRP0 process not running. Enabling managed recovery..." | tee -a "$MASTER_LOG"
-        su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+        sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
@@ -97,7 +97,7 @@ SQL
     sleep 180
 
     # Capture latest sequence number on standby
-    su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+    sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0

@@ -36,7 +36,7 @@ echo "*.control_files = '$CONTROLFILE_PATH'" >> "$TMP_FILE"
 mv "$TMP_FILE" "$PFILE"
 
 # Create SPFILE from PFILE on standby database
-su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 CREATE SPFILE FROM PFILE='$PFILE';
 SHUTDOWN IMMEDIATE;
 STARTUP MOUNT;

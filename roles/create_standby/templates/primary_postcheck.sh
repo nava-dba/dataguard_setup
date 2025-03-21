@@ -30,7 +30,7 @@ case "{{ dataguard_protection_mode | lower }}" in
 esac
 
 # Change protection Mode in primary
-su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0

@@ -18,7 +18,7 @@ else
 fi
 
 # Run SQL Query
-SEQUENCE_NUM=$(su - {{ db_oracle_user }} -c "ORACLE_SID=${ORACLE_SID} ORACLE_HOME=${ORACLE_HOME} PATH=${ORACLE_HOME}/bin:\$PATH sqlplus -s / as sysdba" <<EOF
+SEQUENCE_NUM=$(sqlplus -s / as sysdba <<EOF
 SET PAGESIZE 0 FEEDBACK OFF VERIFY OFF HEADING OFF ECHO OFF;
 $QUERY
 EXIT;
