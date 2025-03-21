@@ -54,3 +54,16 @@
     - name: Debug Pre-config Output for primary database
       ansible.builtin.debug:
         msg: "{{ precheck_output.stdout_lines }}"
+
+    - name: Copy PFILE and password file to standby
+      ansible.builtin.copy:
+        src: "{{ item.src }}"
+        dest: "{{ scripts_dir }}/{{ item.dest }}"
+        remote_src: true
+        mode: "0600"
+        owner: "{{ oracle_user }}"
+        group: "{{ oracle_group }}"
+      delegate_to: "{{ standby_host }}"
+      loop:
+        - { src: "{{ scripts_dir }}/primary.pfile", dest: "standby.pfile" }
+        - { src: "{{ databases.primary.oracle_db_home }}/dbs/orapw{{ databases.primary.db_sid }}", dest: "orapw{{ databases.standby.db_sid }}" }

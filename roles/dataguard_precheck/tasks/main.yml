@@ -24,8 +24,7 @@
   when: dataguarddone.stat.exists
   run_once: true
 
-# Precheck: Verify network connectivity between primary and standby
-- name: Ensure scp is available
+- name: Verify network connectivity between primary and standby
   block:
     - name: Verify primary can ping standby host
       ansible.builtin.command: "ping -c 2 {{ standby_host }}"
@@ -264,25 +263,3 @@
         - inventory_hostname == standby_host
         - cpu_cores != primary_cpu_cores or active_physical_cpu != primary_active_physical_cpu or total_memory != primary_total_memory
 
-# Check if scp is available
-- name: Ensure scp is available
-  block:
-    - name: Check if scp is available
-      ansible.builtin.command: "which scp"
-      register: scp_check
-      ignore_errors: true
-      changed_when: false
-      when: inventory_hostname == primary_host
-
-    - name: Exit if scp is not available
-      ansible.builtin.fail:
-        msg: "scp command not found! Ensure scp is installed on this system."
-      when:
-        - scp_check.rc != 0
-        - inventory_hostname == primary_host
-      run_once: true
-
-    - name: End play if scp is not available
-      ansible.builtin.meta: end_play
-      when: scp_check.rc != 0
-      run_once: true
