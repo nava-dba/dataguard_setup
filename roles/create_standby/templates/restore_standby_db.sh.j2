@@ -105,7 +105,7 @@ if [[ "$WITH_BACKUP" == "true" ]]; then
     echo "EXIT;"
 } > "$RMAN_SCRIPT"
 
-rman target / cmdfile={{ scripts_dir }}/rman_restore.rcv" | tee -a "$MASTER_LOG"
+rman target / cmdfile={{ scripts_dir }}/rman_restore.rcv | tee -a "$MASTER_LOG"
 
 # Capture RMAN exit status
 rman_exit_code=$?
@@ -175,7 +175,7 @@ esac
     echo "EXIT;"
 } > "$RMAN_SCRIPT"
 
-rman target {{ sys_user }}/$1@{{ databases.primary.db_sid }} auxiliary {{ sys_user }}/$1@${standby_unique_name} cmdfile={{ scripts_dir }}/rman_restore.rcv" | tee -a "$MASTER_LOG"
+rman target {{ sys_user }}/$1@{{ databases.primary.db_sid }} auxiliary {{ sys_user }}/$1@${standby_unique_name} cmdfile={{ scripts_dir }}/rman_restore.rcv | tee -a "$MASTER_LOG"
 
 # Capture RMAN exit status
 rman_exit_code=$?

@@ -21,7 +21,7 @@ total_cores=$(lsdev -Cc processor | wc -l)
 {% set controlfile_tag = "CONTROLFILE_BACKUP" %}
 {% set fullbackup_tag = "FULL_ARC_BACKUP" %}
 
-rman target /" <<EOF | tee "$MASTER_LOG"
+rman target / <<EOF | tee "$MASTER_LOG"
 RUN {
     $(for (( i=1; i<=total_cores; i++ )); do
         echo "    ALLOCATE CHANNEL ch$i DEVICE TYPE DISK FORMAT '{{ backup_format }}';"
