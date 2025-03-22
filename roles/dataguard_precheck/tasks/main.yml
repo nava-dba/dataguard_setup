@@ -206,7 +206,7 @@
         - not drprecheckdone.stat.exists
 
     - name: Execute Dataguard Pre-check script on standby
-      ansible.builtin.shell: "set -o pipefail && {{ scripts_dir }}/standby_precheck.sh {{ asm_user_password | quote }}"
+      ansible.builtin.shell: "set -o pipefail && {{ scripts_dir }}/standby_precheck.sh"
       register: precheck_output
       failed_when: precheck_output.rc != 0
       changed_when: false
