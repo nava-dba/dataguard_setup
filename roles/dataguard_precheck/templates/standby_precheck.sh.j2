@@ -5,8 +5,6 @@ export ORACLE_HOME=$(awk -F: -v sid="$ORACLE_SID" '$1 == sid {print $2}' /etc/or
 export PATH=$PATH:$ORACLE_HOME/bin
 MASTER_LOG="{{ done_dir }}/dataguard_precheck.log"
 FAILURE_LOG="{{ done_dir }}/failure_check.log"
-# Find the expect binary dynamically
-EXPECT_CMD=$(command -v expect)
 
 # Ensure log files are empty before running
 > "$MASTER_LOG"
@@ -28,22 +26,15 @@ check_existence() {
     echo "Checking existence of Disk Group or Filesystem: $dg" | tee -a "$MASTER_LOG"
     
     if [[ "$grid_asm_flag" == "true" ]]; then
-    # ASM Disk Group Existence Check using expect
-    exist_check=$(
-        $EXPECT_CMD <<EOF
-        spawn su - {{ grid_user }} -c "sqlplus -s / as sysdba"
-        expect "Password:"
-        send "$1\r"
-        expect "SQL>"
-        send "SET HEADING OFF\n"
-        send "SET FEEDBACK OFF\n"
-        send "SET PAGESIZE 0\n"
-        send "SELECT COUNT(*) FROM v\$asm_diskgroup WHERE name=UPPER('$dg_name');\n"
-        send "EXIT;\n"
-        expect eof
-EOF
-    ) | tee -a "$MASTER_LOG"
-
+        # ASM Disk Group Existence Check
+        exist_check=$("sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+SET HEADING OFF
+SET FEEDBACK OFF
+SET PAGESIZE 0
+SELECT COUNT(*) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);
+EXIT;
+SQL
+)
         sql_exit_status=$?
         if [[ $sql_exit_status -ne 0 ]]; then
             echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"
@@ -75,21 +66,14 @@ check_size() {
 
     if [[ "$grid_asm_flag" == "true" ]]; then
         # ASM Disk Group Available Space Check
-    available_space=$(
-        $EXPECT_CMD <<EOF
-        spawn su - {{ grid_user }} -c "sqlplus -s / as sysdba"
-        expect "Password:"
-        send "$1\r"
-        expect "SQL>"
-        send "SET HEADING OFF\n"
-        send "SET FEEDBACK OFF\n"
-        send "SET PAGESIZE 0\n"
-        send "SELECT ROUND(USABLE_FILE_MB / 1024, 2) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);\n"
-        send "EXIT;\n"
-        expect eof
-EOF
-    ) | tee -a "$MASTER_LOG"
-
+        available_space=$("sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+SET HEADING OFF
+SET FEEDBACK OFF
+SET PAGESIZE 0
+SELECT ROUND(USABLE_FILE_MB / 1024, 2) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);
+EXIT;
+SQL
+)
         sql_exit_status=$?
         if [[ $sql_exit_status -ne 0 ]]; then
             echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"

@@ -212,6 +212,10 @@
       changed_when: false
       args:
         executable: /bin/bash
+      become: true
+      become_user: "{{ grid_user }}"
+      become_method: su
+      become_pass: "{{ asm_user_password }}"
       when:
         - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
