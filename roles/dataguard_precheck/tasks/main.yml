@@ -206,7 +206,7 @@
         - not drprecheckdone.stat.exists
 
     - name: Allow grid user to access Ansible temporary directory
-      ansible.builtin.command: "chmod 770 {{ ansible_env.remote_tmp | default('/tmp/.ansible') }}"
+      ansible.builtin.command: "chmod 777 {{ ansible_env.remote_tmp | default('/tmp/.ansible') }}"
       changed_when: false
 
     - name: Execute Dataguard Pre-check script on standby
