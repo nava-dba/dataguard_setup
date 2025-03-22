@@ -186,12 +186,13 @@
 
 # Precheck: Standby site
 - name: Precheck Standby site
+  when:
+    - inventory_hostname == standby_host
   block:
     - name: Checking if Dataguard setup was already done
       ansible.builtin.stat:
         path: "{{ done_dir }}/drprecheck.success"
       register: drprecheckdone
-      when: inventory_hostname == standby_host
 
     - name: Copy Dataguard Pre-check script for standby
       ansible.builtin.template:
@@ -202,8 +203,11 @@
         database_name: "standby"
         db_size: "{{ standby_db_size }}"
       when:
-        - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
+
+    - name: Allow grid user to access Ansible temporary directory
+      ansible.builtin.command: "chmod 770 {{ ansible_env.remote_tmp | default('/tmp/.ansible') }}"
+      changed_when: false
 
     - name: Execute Dataguard Pre-check script on standby
       ansible.builtin.shell: "set -o pipefail && {{ scripts_dir }}/standby_precheck.sh"
@@ -216,14 +220,12 @@
       become_user: "{{ grid_user }}"
       become_method: su
       when:
-        - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
 
     - name: Debug Pre-check Output for standby database
       ansible.builtin.debug:
         msg: "{{ precheck_output.stdout_lines }}"
       when:
-        - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
 
 # Precheck: System Configuration Comparison
