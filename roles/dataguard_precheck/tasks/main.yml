@@ -198,7 +198,7 @@
       ansible.builtin.template:
         src: standby_precheck.sh.j2
         dest: "{{ scripts_dir }}/standby_precheck.sh"
-        mode: '0755'
+        mode: '0770'
       vars:
         database_name: "standby"
         db_size: "{{ standby_db_size }}"
@@ -206,7 +206,7 @@
         - not drprecheckdone.stat.exists
 
     - name: Allow grid user to access Ansible temporary directory
-      ansible.builtin.command: "chmod 777 {{ ansible_env.remote_tmp | default('/tmp/.ansible') }}"
+      ansible.builtin.command: "chmod 770 {{ ansible_env.remote_tmp | default('/tmp/.ansible') }}"
       changed_when: false
 
     - name: Execute Dataguard Pre-check script on standby
