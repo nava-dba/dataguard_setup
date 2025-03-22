@@ -43,7 +43,7 @@ check_existence() {
         expect eof
 EOF
     ) | tee -a "$MASTER_LOG"
-fi
+
         sql_exit_status=$?
         if [[ $sql_exit_status -ne 0 ]]; then
             echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"
@@ -89,7 +89,7 @@ check_size() {
         expect eof
 EOF
     ) | tee -a "$MASTER_LOG"
-fi
+
         sql_exit_status=$?
         if [[ $sql_exit_status -ne 0 ]]; then
             echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"
