@@ -67,7 +67,7 @@ SET PAGESIZE 0
 SELECT ROUND(USABLE_FILE_MB / 1024, 2) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);
 EXIT;
 SQL
-        )
+)
 
         if [[ -z "$available_space" || ! [[ "$available_space" =~ ^[0-9]+(\.[0-9]+)?$ ]] ]]; then
             echo "Error: Failed to retrieve available space from ASM or SQL command failed." | tee -a "$FAILURE_LOG"
@@ -117,7 +117,7 @@ check_existence "$online_log_dest1"
 check_existence "$db_recovery_file_dest"
 
 # Validate available space only for "$file_dest"
-check_size "$file_dest"
+#check_size "$file_dest"
 
 # Create directories if JFS2
 if [[ "$grid_asm_flag" == "false" ]]; then

@@ -264,4 +264,3 @@
       when:
         - inventory_hostname == standby_host
         - cpu_cores != primary_cpu_cores or active_physical_cpu != primary_active_physical_cpu or total_memory != primary_total_memory
-
