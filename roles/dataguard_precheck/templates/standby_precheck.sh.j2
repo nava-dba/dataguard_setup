@@ -1,8 +1,10 @@
 #!/bin/bash
 
-export ORACLE_SID=$(ps -ef | grep pmon | grep ASM | awk '{match($NF, /\+ASM[0-9]*/); print substr($NF, RSTART, RLENGTH)}')
-export ORACLE_HOME=$(awk -F: -v sid="$ORACLE_SID" '$1 == sid {print $2}' /etc/oratab)
-export PATH=$PATH:$ORACLE_HOME/bin
+# Extract ORACLE_SID and ORACLE_HOME dynamically
+ORACLE_SID=$(ps -ef | grep pmon | grep ASM | awk '{match($NF, /\+ASM[0-9]*/); print substr($NF, RSTART, RLENGTH)}')
+ORACLE_HOME=$(awk -F: -v sid="$ORACLE_SID" '$1 == sid {print $2}' /etc/oratab)
+export PATH=$ORACLE_HOME/bin:$PATH
+
 MASTER_LOG="{{ done_dir }}/dataguard_precheck.log"
 FAILURE_LOG="{{ done_dir }}/failure_check.log"
 
@@ -21,32 +23,24 @@ db_oracle_user="{{ db_oracle_user }}"
 db_oinstall_group="{{ db_oinstall_group }}"
 
 check_existence() {
-    local dg=$1
+    local dg="$1"
     local dg_name="'${dg#+}'"
     echo "Checking existence of Disk Group or Filesystem: $dg" | tee -a "$MASTER_LOG"
     
     if [[ "$grid_asm_flag" == "true" ]]; then
         # ASM Disk Group Existence Check
-        exist_check=$("sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+        if ! sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
 SELECT COUNT(*) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);
 EXIT;
-SQL
-)
-        sql_exit_status=$?
-        if [[ $sql_exit_status -ne 0 ]]; then
-            echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"
+SQL | grep -q "^[[:digit:]]*$"
+        then
+            echo "Error: Disk group $dg does not exist or SQL command failed." | tee -a "$FAILURE_LOG"
             exit 1
         fi
 
-        exist_check=$(echo "$exist_check" | tr -d '[:space:]')
-        
-        if [[ "$exist_check" -eq 0 ]]; then
-            echo "Error: Disk group $dg does not exist." | tee -a "$FAILURE_LOG"
-            exit 1
-        fi
         echo "Disk group $dg exists." | tee -a "$MASTER_LOG"
     else
         # JFS2 File System Existence Check
@@ -59,24 +53,24 @@ SQL
 }
 
 check_size() {
-    local dg=$1
+    local dg="$1"
     local dg_name="'${dg#+}'"
 
     echo "Checking available space for $dg..." | tee -a "$MASTER_LOG"
 
     if [[ "$grid_asm_flag" == "true" ]]; then
         # ASM Disk Group Available Space Check
-        available_space=$("sqlplus -s / as sysdba" <<SQL | tee -a "$MASTER_LOG"
+        available_space=$(sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
 SET FEEDBACK OFF
 SET PAGESIZE 0
 SELECT ROUND(USABLE_FILE_MB / 1024, 2) FROM v\$asm_diskgroup WHERE name=UPPER($dg_name);
 EXIT;
 SQL
-)
-        sql_exit_status=$?
-        if [[ $sql_exit_status -ne 0 ]]; then
-            echo "Error: SQL command failed with exit status $sql_exit_status." | tee -a "$FAILURE_LOG"
+        )
+
+        if [[ -z "$available_space" || ! [[ "$available_space" =~ ^[0-9]+(\.[0-9]+)?$ ]] ]]; then
+            echo "Error: Failed to retrieve available space from ASM or SQL command failed." | tee -a "$FAILURE_LOG"
             exit 1
         fi
 
