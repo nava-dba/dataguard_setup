@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Extract ORACLE_SID and ORACLE_HOME dynamically
-ORACLE_SID=$(ps -ef | grep pmon | grep ASM | awk '{match($NF, /\+ASM[0-9]*/); print substr($NF, RSTART, RLENGTH)}')
-ORACLE_HOME=$(awk -F: -v sid="$ORACLE_SID" '$1 == sid {print $2}' /etc/oratab)
+export ORACLE_SID=$(ps -ef | grep pmon | grep ASM | awk '{match($NF, /\+ASM[0-9]*/); print substr($NF, RSTART, RLENGTH)}')
+export ORACLE_HOME=$(awk -F: -v sid="$ORACLE_SID" '$1 == sid {print $2}' /etc/oratab)
 export PATH=$ORACLE_HOME/bin:$PATH
 
 MASTER_LOG="{{ done_dir }}/dataguard_precheck.log"
