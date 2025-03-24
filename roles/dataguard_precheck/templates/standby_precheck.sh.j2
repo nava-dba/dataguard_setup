@@ -52,7 +52,7 @@ SQL
         # Extracting values using grep and awk
         disk_count=$(grep "disk_count:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 
-        if [[ "$disk_count" =~ ^[0-9]+$ && "$disk_count" -gt 0 ]]; then
+        if [[ "$disk_count" -gt 0 ]]; then
             echo "Disk group $dg exists." | tee -a "$MASTER_LOG"
         else
             echo "Error: Disk group $dg does not exist or SQL command failed." | tee -a "$FAILURE_LOG"
