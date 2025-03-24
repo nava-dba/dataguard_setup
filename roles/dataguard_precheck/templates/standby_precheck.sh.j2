@@ -39,9 +39,9 @@ SQL | grep -q "^[[:digit:]]*$"
         then
             echo "Error: Disk group $dg does not exist or SQL command failed." | tee -a "$FAILURE_LOG"
             exit 1
-        fi
-
+        else
         echo "Disk group $dg exists." | tee -a "$MASTER_LOG"
+        fi
     else
         # JFS2 File System Existence Check
         if ! df -g "$dg" &>/dev/null; then
@@ -82,9 +82,8 @@ SQL
         # Extracting values using grep and awk
         available_space=$(grep "available_space:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 
-        if [[ -z "$available_space" || ! [[ "$available_space" =~ ^[0-9]+(\.[0-9]+)?$ ]] ]]; then
+        if [[ -z "$available_space" ]]; then
             echo "Error: Failed to retrieve available space from ASM or SQL command failed." | tee -a "$FAILURE_LOG"
-            exit 1
         fi
 
         available_space=$(echo "$available_space" | tr -d '[:space:]')
@@ -132,7 +131,7 @@ check_existence "$db_recovery_file_dest"
 # Validate available space only for "$file_dest"
 #check_size "$file_dest"
 
-# Create directories if JFS2
+# Create directories for JFS2
 if [[ "$grid_asm_flag" == "false" ]]; then
     create_directories "$file_dest" "$standby_db_unique_name" "$db_oracle_user" "$db_oinstall_group"
 fi
