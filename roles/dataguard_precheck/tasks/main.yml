@@ -218,7 +218,7 @@
       changed_when: false
       become: true
       become_user: "{{ grid_user }}"
-      become_method: ansible.builtin.su
+      become_method: su
       password: "{{ asm_user_password }}"
       when:
         - not drprecheckdone.stat.exists
