@@ -52,10 +52,10 @@ SQL
         # Extracting values using grep and awk
         disk_count=$(grep "disk_count:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 
-        if [[ "$disk_count" -gt 0 ]]; then
-            echo "Disk group $dg exists." | tee -a "$MASTER_LOG"
-        else
+        if [[ -z "$disk_count" || "$disk_count" -eq 0 ]]; then
             echo "Error: Disk group $dg does not exist or SQL command failed." | tee -a "$FAILURE_LOG"
+        else
+           echo "Disk group $dg exists." | tee -a "$MASTER_LOG"
         fi
     else
         # JFS2 File System Existence Check
@@ -95,7 +95,7 @@ SQL
             exit 1
         fi
 
-        # Extracting values using grep and awk
+        # Extracting values from SQL output
         available_space=$(grep "available_space:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 
         if [[ -z "$available_space" ]]; then
@@ -111,10 +111,10 @@ SQL
     echo "Available space in $dg: ${available_space}G" | tee -a "$MASTER_LOG"
     echo "Required space: ${db_size}G" | tee -a "$MASTER_LOG"
 
-    available_space_int=$(echo "$available_space" | awk -F. '{print $1}')
+
     db_size_int=$(echo "$db_size" | awk -F. '{print $1}')
 
-    if [ "$available_space_int" -ge "$db_size_int" ]; then
+    if [[ "${available_space%.*}" -ge "${db_size%.*}" ]]; then
         echo "Sufficient space available in $dg." | tee -a "$MASTER_LOG"
     else
         echo "Error: Not enough space available in $dg. Required: ${db_size}G, Available: ${available_space}G" | tee -a "$FAILURE_LOG"
@@ -128,13 +128,8 @@ create_directories() {
     local group=$4
 
     echo "Creating directories for JFS2..." | tee -a "$MASTER_LOG"
-
-    mkdir -p "${base_dir}/${db_unique_name}/controlfiles"
-    mkdir -p "${base_dir}/${db_unique_name}/datafiles"
-    mkdir -p "${base_dir}/${db_unique_name}/redologs"
-
+    mkdir -p "${base_dir}/${db_unique_name}"/{controlfiles,datafiles,redologs}
     chown -R "${user}:${group}" "${base_dir}/${db_unique_name}"
-
     echo "Directories created and ownership set." | tee -a "$MASTER_LOG"
 }
 
@@ -144,9 +139,9 @@ check_existence "$online_log_dest1"
 check_existence "$db_recovery_file_dest"
 
 # Validate available space only for "$file_dest"
-#check_size "$file_dest"
+check_size "$file_dest"
 
-# Create directories for JFS2
+# Create directories for JFS2 if not ASM
 if [[ "$grid_asm_flag" == "false" ]]; then
     create_directories "$file_dest" "$standby_db_unique_name" "$db_oracle_user" "$db_oinstall_group"
 fi
@@ -161,6 +156,6 @@ if [[ -s "$FAILURE_LOG" ]]; then
 fi
 
 echo "Pre-checks passed for standby database!" | tee -a "$MASTER_LOG"
-rm -f "$FAILURE_LOG"
 touch "{{ done_dir }}/drprecheck.success"
+rm -f "$FAILURE_LOG"
 exit 0
