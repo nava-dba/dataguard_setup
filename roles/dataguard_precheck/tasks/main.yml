@@ -219,7 +219,6 @@
       become: true
       become_user: "{{ grid_user }}"
       become_method: su
-      password: "{{ asm_user_password }}"
       when:
         - not drprecheckdone.stat.exists
 
