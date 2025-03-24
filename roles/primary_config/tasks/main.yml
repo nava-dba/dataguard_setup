@@ -61,8 +61,8 @@
         dest: "{{ scripts_dir }}/{{ item.dest }}"
         remote_src: true
         mode: "0600"
-        owner: "{{ oracle_user }}"
-        group: "{{ oracle_group }}"
+        owner: "{{ db_oracle_user }}"
+        group: "{{ db_oinstall_group }}"
       delegate_to: "{{ standby_host }}"
       loop:
         - { src: "{{ scripts_dir }}/primary.pfile", dest: "standby.pfile" }
