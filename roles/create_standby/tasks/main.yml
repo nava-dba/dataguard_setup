@@ -120,8 +120,9 @@
     - name: Remove existing standby database entry from tnsnames.ora
       ansible.builtin.replace:
         path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
-        regexp: '\n?{{ databases.standby.db_unique_name }}=.*?\)\n\)\n\)'
+        regexp: '^\s*{{ databases.standby.db_unique_name }}=\s*\(DESCRIPTION\s*=\s*\(ADDRESS_LIST\s*=\s*\(ADDRESS=.*?\)\s*\)\s*\(CONNECT_DATA\s*=\s*\(SERVER=.*?\)\s*\(SERVICE_NAME=.*?\)\s*\)\s*\)\s*'
         replace: ''
+        backup: true
       when: inventory_hostname == primary_host
 
     - name: Add new standby database entry to tnsnames.ora with temporary port
@@ -129,7 +130,9 @@
         path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
         marker: "# STANDBY ENTRY for {{ databases.standby.db_unique_name }} added by ansible play #"
         insertafter: EOF
+        create: true
         block: |
+
           {{ databases.standby.db_unique_name }}=
           (DESCRIPTION =
             (ADDRESS_LIST =
