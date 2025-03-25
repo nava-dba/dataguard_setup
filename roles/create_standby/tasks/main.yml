@@ -117,13 +117,30 @@
         msg: "Primary Free Port: {{ free_port }}"
       when: inventory_hostname == primary_host
 
-    - name: Update PORT for standby database in tnsnames.ora of primary site
+    - name: Remove existing standby database entry from tnsnames.ora
       ansible.builtin.replace:
         path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
-        regexp: '(?<={{ databases.standby.db_unique_name }}=.*?HOST={{ standby_host }}\)\(PORT=)\d+'
-        replace: '\g<0>{{ free_port }}'
-      when:
-        - inventory_hostname == primary_host
+        regexp: '\n?{{ databases.standby.db_unique_name }}=.*?\)\n\)\n\)'
+        replace: ''
+      when: inventory_hostname == primary_host
+
+    - name: Add new standby database entry to tnsnames.ora with temporary port
+      ansible.builtin.blockinfile:
+        path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
+        marker: "# STANDBY ENTRY for {{ databases.standby.db_unique_name }} added by ansible play #"
+        insertafter: EOF
+        block: |
+          {{ databases.standby.db_unique_name }}=
+          (DESCRIPTION =
+            (ADDRESS_LIST =
+              (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ free_port }}))
+            )
+            (CONNECT_DATA =
+              (SERVER=DEDICATED)
+              (SERVICE_NAME={{ databases.standby.db_service_name }})
+            )
+          )
+      when: inventory_hostname == primary_host
 
 - name: Run Dataguard Restore Script on standby
   when:
