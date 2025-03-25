@@ -62,11 +62,11 @@
       failed_when: precheck_output.rc != 0
       changed_when: false
       environment:
-        ORACLE_HOME: "{{ databases[database_name].oracle_db_home }}"
-        GRID_HOME: "{{ databases[database_name].grid_db_home }}"
-        ORACLE_SID: "{{ databases[database_name].db_sid }}"
-        PATH: "{{ databases[database_name].oracle_db_home }}/bin:{{ ansible_env.PATH }}"
-        TNS_ADMIN: "{{ databases[database_name].oracle_db_home }}/network/admin"
+        ORACLE_HOME: "{{ databases.standby.oracle_db_home }}"
+        GRID_HOME: "{{ databases.standby.grid_db_home }}"
+        ORACLE_SID: "{{ databases.standby.db_sid }}"
+        PATH: "{{ databases.standby.oracle_db_home }}/bin:{{ ansible_env.PATH }}"
+        TNS_ADMIN: "{{ databases.standby.oracle_db_home }}/network/admin"
 
     - name: Debug config Output for standby database
       ansible.builtin.debug:
