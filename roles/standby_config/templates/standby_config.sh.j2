@@ -190,6 +190,8 @@ EOL
    
    export TNS_ADMIN="${tnsnames_dir}"
    export $ORACLE_HOME
+   echo $ORACLE_HOME >> "$MASTER_LOG"
+   echo $TNS_ADMIN >> "$MASTER_LOG"
 
    $ORACLE_HOME/bin/lsnrctl start rman_listener >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
