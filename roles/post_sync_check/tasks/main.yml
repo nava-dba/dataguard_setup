@@ -157,7 +157,7 @@
 
 - name: Query Data Guard Sync Status on Standby
   ansible.builtin.shell: |
-    su - {{ db_oracle_user }} -c "export ORACLE_SID={{ databases.standby.db_sid }}; \
+    "export ORACLE_SID={{ databases.standby.db_sid }}; \
       export ORACLE_HOME={{ databases.standby.oracle_db_home }}; \
       export PATH=$ORACLE_HOME/bin:$PATH; \
       {{ databases.standby.oracle_db_home }}/bin/sqlplus -s / as sysdba" <<EOF
