@@ -84,7 +84,7 @@
     - restoredone.stat.exists is not defined or not restoredone.stat.exists
   block:
     - name: Fetch Available Port from Standby Host Log
-      ansible.builtin.shell: "set -o pipefail && grep 'Available port:' /tmp/ansible/done/standby_tns.log | awk '{print $3}'"
+      ansible.builtin.shell: "grep 'Available port:' /tmp/ansible/done/standby_tns.log | awk '{print $3}'"
       register: port_result
       changed_when: false
       when:
@@ -95,13 +95,27 @@
         free_port: "{{ port_result.stdout }}"
       when:
         - inventory_hostname == standby_host
+        - port_result.stdout is defined
+        - port_result.stdout | length > 0
+
+    - name: Debug Free Port on Standby
+      ansible.builtin.debug:
+        msg: "Standby Free Port: {{ free_port }}"
+      when: inventory_hostname == standby_host
 
     - name: Ensure PORT variable is available from standby
       ansible.builtin.set_fact:
         free_port: "{{ hostvars[standby_host]['free_port'] }}"
       when:
         - inventory_hostname == primary_host
-        - hostvars[primary_host].free_port is defined
+        - hostvars[standby_host] is defined
+        - hostvars[standby_host].free_port is defined
+        - hostvars[standby_host].free_port | length > 0
+
+    - name: Debug Free Port on Primary
+      ansible.builtin.debug:
+        msg: "Primary Free Port: {{ free_port }}"
+      when: inventory_hostname == primary_host
 
     - name: Update PORT for standby database in tnsnames.ora of primary site
       ansible.builtin.lineinfile:
