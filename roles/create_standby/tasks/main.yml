@@ -128,7 +128,6 @@
     - name: Add new standby database entry to tnsnames.ora with temporary port
       ansible.builtin.blockinfile:
         path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
-        marker: "# STANDBY ENTRY for {{ databases.standby.db_unique_name }} added by ansible play #"
         insertafter: EOF
         create: true
         block: |
