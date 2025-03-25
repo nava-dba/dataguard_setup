@@ -14,6 +14,34 @@ FAILURE_LOG="{{ done_dir }}/primary_post_restore_failure.log"
 > "$MASTER_LOG"
 > "$FAILURE_LOG"
 
+#  Update tnsnames.ora with user provided port
+# Define the new entry
+STDBY_ENTRY="
+
+$standby_unique_name=
+(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases.standby.listener_port }}))
+  )
+  (CONNECT_DATA =
+    (SERVER=DEDICATED)
+    (SERVICE_NAME={{ databases.standby.db_service_name}})
+  )
+)"
+
+# Check if tnsnames.ora file exists
+if [[ ! -f "$tnsnames_file" ]]; then
+  echo "Error: TNS names file $tnsnames_file does not exist in $ORACLE_HOME." | tee -a "$FAILURE_LOG"
+else
+  # Check if the entry already exists in tnsnames.ora before appending
+  if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
+    echo "$STDBY_ENTRY" >> "$tnsnames_file"
+    echo "TNS alias added for standby database tnsnames.ora."
+  else
+    echo "Entry already exists. Skipping update."
+  fi
+fi
+
 # Set log_archive_dest_2 dynamically based on data protection modes
 case "{{ dataguard_protection_mode | lower }}" in
     maximum_performance)
@@ -62,34 +90,6 @@ if [[ "$PROTECTION_MODE" == "${dataguard_protection_mode}" && $sqlplus_exit_code
 else 
     echo "ERROR: Dataguard configuration failed, verify logs" | tee -a "$FAILURE_LOG"
     exit 1
-fi
-
-#  Update tnsnames.ora with user provided port
-# Define the new entry
-STDBY_ENTRY="
-
-$standby_unique_name=
-(DESCRIPTION =
-  (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases.standby.listener_port }}))
-  )
-  (CONNECT_DATA =
-    (SERVER=DEDICATED)
-    (SERVICE_NAME={{ databases.standby.db_service_name}})
-  )
-)"
-
-# Check if tnsnames.ora file exists
-if [[ ! -f "$tnsnames_file" ]]; then
-  echo "Error: TNS names file $tnsnames_file does not exist in $ORACLE_HOME." | tee -a "$FAILURE_LOG"
-else
-  # Check if the entry already exists in tnsnames.ora before appending
-  if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
-    echo "$STDBY_ENTRY" >> "$tnsnames_file"
-    echo "TNS alias added for standby database tnsnames.ora."
-  else
-    echo "Entry already exists. Skipping update."
-  fi
 fi
 
 # Check for failures and exit accordingly
