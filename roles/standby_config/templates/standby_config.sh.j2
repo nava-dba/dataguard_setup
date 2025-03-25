@@ -77,6 +77,15 @@ ${primary_unique_nam}=
   )
 )"
 
+# Create the file if it doesn't exist
+if [[ ! -f "$tnsnames_file" ]]; then
+    echo "tnsnames.ora not found. Creating new file..."
+    touch "$tnsnames_file"
+else 
+   cp "$tnsnames_file" "$tnsnames_file.bak"
+   echo "Using existing tnsnames.ora file..."
+fi
+
 # Check if the entries already exist in tnsnames.ora before appending
 if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
   echo "$STDBY_ENTRY" >> "$tnsnames_file"
