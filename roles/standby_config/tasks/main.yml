@@ -47,18 +47,6 @@
         - adump
         - dpump
 
-    - name: Copy necessary files for standby configuration
-      ansible.builtin.copy:
-        src: "{{ scripts_dir }}/{{ item.src }}"
-        dest: "{{ databases.standby.oracle_db_home }}/{{ item.dest }}"
-        owner: "{{ db_oracle_user }}"
-        group: "{{ db_oinstall_group }}"
-        remote_src: true
-        mode: "{{ item.mode }}"
-      loop:
-        - { src: "orapw{{ databases.standby.db_sid }}", dest: "dbs", mode: "0640" }
-        - { src: "standby.pfile", dest: "dbs", mode: "0644" }
-
     - name: Copy Dataguard config script for standby
       ansible.builtin.template:
         src: standby_config.sh.j2
