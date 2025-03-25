@@ -3,6 +3,7 @@
 ORACLE_SID={{ databases[database_name].db_sid }}
 ORACLE_HOME={{ databases[database_name].oracle_db_home }}
 PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
+standby_unique_name="{{ databases[database_name].db_unique_name }}"
 tnsnames_dir="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
 export TNS_ADMIN="${tnsnames_dir}"
 export ORACLE_HOME="${ORACLE_HOME}"
