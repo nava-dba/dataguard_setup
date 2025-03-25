@@ -123,10 +123,12 @@ START_PORT=1521
 END_PORT=1600
 
 # Find the first available port
-for PORT in $(seq $START_PORT $END_PORT); do
-    if ! netstat -an | grep -w LISTEN | awk '{print $4}' | grep -E ".*\.$PORT$" >/dev/null; then
-        echo "Available port: $PORT"  | tee -a "$MASTER_LOG"
-        break
+PORT=""
+for ((P=START_PORT; P<=END_PORT; P++)); do
+    if ! netstat -an | awk '/LISTEN/ {print $4}' | grep -E ".*\.$P$" >/dev/null; then
+        PORT=$P
+        echo "Available port: $PORT"
+        exit 0
     fi
 done
 
