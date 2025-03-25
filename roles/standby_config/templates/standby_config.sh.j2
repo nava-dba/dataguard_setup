@@ -187,8 +187,10 @@ EOL
   else
     echo "Entry for ${standby_unique_name} already exists. Skipping update."
   fi
+   
    export TNS_ADMIN="${tnsnames_dir}"
-   echo $TNS_ADMIN >> $MASTER_LOG
+   export $ORACLE_HOME
+
    $ORACLE_HOME/bin/lsnrctl start rman_listener >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
     echo "Listener start successful" | tee -a "$MASTER_LOG"
