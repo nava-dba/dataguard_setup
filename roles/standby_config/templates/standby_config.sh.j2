@@ -154,7 +154,7 @@ fi
 RMAN_LISTENER =
   (DESCRIPTION_LIST =
     (DESCRIPTION =
-      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT = {$PORT}))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT = ${PORT}))
     )
   )
 
@@ -198,7 +198,7 @@ STDBY_ENTRY="
 ${standby_unique_name}=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={$PORT}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT= ${PORT}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
