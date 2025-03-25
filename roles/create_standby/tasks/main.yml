@@ -62,8 +62,8 @@
 
     - name: Set DBID and control file location as facts
       ansible.builtin.set_fact:
-       standby_dbid: "{{ dbid_content['content'] | b64decode | trim }}"
-       standby_controlfile_location: "{{ controlfile_content['content'] | b64decode | trim }}"
+        standby_dbid: "{{ dbid_content['content'] | b64decode | trim }}"
+        standby_controlfile_location: "{{ controlfile_content['content'] | b64decode | trim }}"
       when:
         - dbid_content['content'] is defined
         - controlfile_content['content'] is defined
@@ -77,6 +77,40 @@
     - hostvars[primary_host].standby_dbid is defined
     - hostvars[primary_host].standby_controlfile_location is defined
     - restoredone.stat.exists is not defined or not restoredone.stat.exists
+
+- name: Fetch Port from Standby and Update TNS Entry on Primary
+  when:
+    - not with_backup
+    - restoredone.stat.exists is not defined or not restoredone.stat.exists
+  block:
+    - name: Fetch Available Port from Standby Host Log
+      ansible.builtin.shell: "set -o pipefail && grep 'Available port:' /tmp/ansible/done/standby_tns.log | awk '{print $3}'"
+      register: port_result
+      changed_when: false
+      when:
+        - inventory_hostname == standby_host
+
+    - name: Store Available Port as Fact
+      ansible.builtin.set_fact:
+        free_port: "{{ port_result.stdout }}"
+      when:
+        - inventory_hostname == standby_host
+
+    - name: Ensure PORT variable is available from standby
+      ansible.builtin.set_fact:
+        free_port: "{{ hostvars[standby_host]['free_port'] }}"
+      when:
+        - inventory_hostname == primary_host
+        - hostvars[primary_host].free_port is defined
+
+    - name: Update PORT for standby database in tnsnames.ora of primary site
+      ansible.builtin.lineinfile:
+        path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
+        regexp: '(^orcls=.*?HOST={{ standby_host }}\)\(PORT=)\d+'
+        line: '\1{{ free_port }}'
+        backrefs: true
+      when:
+        - inventory_hostname == primary_host
 
 - name: Run Dataguard Restore Script on standby
   when:
