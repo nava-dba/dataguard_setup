@@ -129,8 +129,7 @@ typeset -i P=$START_PORT
 while [ $P -le $END_PORT ]; do
     if ! netstat -an | awk '/LISTEN/ {print $4}' | grep -E ".*\.$P$" >/dev/null; then
         PORT=$P
-        echo "Available port: $PORT"
-        exit 0
+        echo "Available port: $PORT" | tee -a "$MASTER_LOG"
     fi
     P=$((P + 1))  # Increment
 done
@@ -198,7 +197,7 @@ fi
     exit 1
   fi
 
-  $ORACLE_HOME/bin/lsnrctl status >> "$MASTER_LOG"
+  $ORACLE_HOME/bin/lsnrctl status rman_listener >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
     echo "Listener is running successfully" | tee -a "$MASTER_LOG"
   else
