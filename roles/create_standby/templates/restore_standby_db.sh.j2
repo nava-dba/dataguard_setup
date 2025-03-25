@@ -1,9 +1,13 @@
 #!/bin/bash
 
-export ORACLE_SID={{ databases[database_name].db_sid }}
-export ORACLE_HOME={{ databases[database_name].oracle_db_home }}
-export PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
-export TNS_ADMIN="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
+ORACLE_SID={{ databases[database_name].db_sid }}
+ORACLE_HOME={{ databases[database_name].oracle_db_home }}
+PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
+tnsnames_dir="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
+export TNS_ADMIN="${tnsnames_dir}"
+export ORACLE_HOME="${ORACLE_HOME}"
+export PATH="${ORACLE_HOME}/bin:$PATH"
+export ORACLE_SID="${ORACLE_SID}"
 RMAN_SCRIPT="{{ scripts_dir }}/rman_restore.rcv"
 MASTER_LOG="{{ done_dir }}/standby_rman_restore.log"
 FAILURE_LOG="{{ done_dir }}/standby_rman_restore_fail.log"

@@ -189,8 +189,9 @@ EOL
   fi
    
    export TNS_ADMIN="${tnsnames_dir}"
-   export $ORACLE_HOME
-   export $ORACLE_PATH
+   export ORACLE_HOME="${ORACLE_HOME}"
+   export PATH="${ORACLE_HOME}/bin:$PATH"
+   export ORACLE_SID="${ORACLE_SID}"
    
    $ORACLE_HOME/bin/lsnrctl start rman_listener >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
