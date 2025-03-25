@@ -116,7 +116,6 @@ elif [[ "$WITH_BACKUP" == "false" ]]; then
 rman_listener_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora"
 tnsnames_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/tnsnames.ora"
 tnsnames_dir="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
-export TNS_ADMIN=${tnsnames_dir}
 
 # Define port range
 START_PORT=1521
@@ -190,7 +189,7 @@ EOL
 else
   echo "Entry for ${standby_unique_name} already exists. Skipping update."
 fi
-
+  export TNS_ADMIN=${tnsnames_dir}
   $ORACLE_HOME/bin/lsnrctl start rman_listener >> "$MASTER_LOG"
   if [ $? -eq 0 ]; then
     echo "Listener start successful" | tee -a "$MASTER_LOG"
