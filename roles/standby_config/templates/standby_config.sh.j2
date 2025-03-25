@@ -36,12 +36,20 @@ db_create_online_log_dest_1="'${db_create_online_log_dest_1}'"
 > "$FAILURE_LOG"
 
 # Find available port
-for PORT in {1521..1600}; do
-    netstat -an | grep -w LISTEN | grep -q ":$PORT" || { echo "Available port: $PORT"; exit 0; }
+PORT=""
+for P in {1521..1600}; do
+    if ! netstat -an | grep -w LISTEN | grep -q ":$P"; then
+        PORT=$P
+        echo "Available port: $PORT" | tee -a "$MASTER_LOG"
+        break
+    fi
 done
-echo "No available ports found in range 1521-1600"
-exit 1
 
+# If no port was found, log the failure and exit
+if [[ -z "$PORT" ]]; then
+    echo "No available ports found in range 1521-1600" | tee -a "$FAILURE_LOG"
+    exit 1
+fi
 
 # Update tnsnames.ora
 # Define the new entries
