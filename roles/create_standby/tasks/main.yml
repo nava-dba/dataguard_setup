@@ -80,7 +80,7 @@
 
 - name: Fetch Port from Standby and Update TNS Entry on Primary
   when:
-    - not with_backup
+    - not with_backup | bool 
     - restoredone.stat.exists is not defined or not restoredone.stat.exists
   block:
     - name: Fetch Available Port from Standby Host Log
@@ -98,11 +98,6 @@
         - port_result.stdout is defined
         - port_result.stdout | length > 0
 
-    - name: Debug Free Port on Standby
-      ansible.builtin.debug:
-        msg: "Standby Free Port: {{ free_port }}"
-      when: inventory_hostname == standby_host
-
     - name: Ensure PORT variable is available from standby
       ansible.builtin.set_fact:
         free_port: "{{ hostvars[standby_host]['free_port'] }}"
@@ -111,11 +106,6 @@
         - hostvars[standby_host] is defined
         - hostvars[standby_host].free_port is defined
         - hostvars[standby_host].free_port | length > 0
-
-    - name: Debug Free Port on Primary
-      ansible.builtin.debug:
-        msg: "Primary Free Port: {{ free_port }}"
-      when: inventory_hostname == primary_host
 
     - name: Remove existing standby database entry from tnsnames.ora
       ansible.builtin.replace:
@@ -198,7 +188,6 @@
     - inventory_hostname == standby_host
     - restoredone.stat.exists
     - not postrestoredone.stat.exists
-    - with_backup | bool
   block:
     - name: Copy RMAN Restore Post-Processing Script
       ansible.builtin.template:
@@ -237,9 +226,7 @@
 
     - name: Set fact for condition evaluation
       ansible.builtin.set_fact:
-        postcheck_required: >-
-          {{ (with_backup | bool and postrestore_status | bool) or
-             (not with_backup | bool and not postrestore_status | bool) }}
+        postcheck_required: "{{ postrestore_status | bool }}"
 
 - name: Run Protection Mode Post-Processing on primary
   when:
@@ -248,6 +235,14 @@
     - not dataguarddone.stat.exists
     - postcheck_required
   block:
+    - name: Remove RMAN Temporary listsner_port for standby database entry from tnsnames.ora on primary site
+      ansible.builtin.replace:
+        path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
+        regexp: '^\s*{{ databases.standby.db_unique_name }}=\s*\(DESCRIPTION\s*=\s*\(ADDRESS_LIST\s*=\s*\(ADDRESS=.*?\)\s*\)\s*\(CONNECT_DATA\s*=\s*\(SERVER=.*?\)\s*\(SERVICE_NAME=.*?\)\s*\)\s*\)\s*'
+        replace: ''
+        backup: true
+      when: inventory_hostname == primary_host
+
     - name: Copy Protection Mode Post-Processing Script on primary
       ansible.builtin.template:
         src: primary_postcheck.sh

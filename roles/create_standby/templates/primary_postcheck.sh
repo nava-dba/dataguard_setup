@@ -4,6 +4,8 @@
 export ORACLE_SID={{ databases[database_name].db_sid }}
 export ORACLE_HOME={{ databases[database_name].oracle_db_home }}
 export PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
+standby_unique_name="{{ databases[database_name].db_unique_name}}"
+tnsnames_file="$ORACLE_HOME/network/admin/tnsnames.ora"
 
 MASTER_LOG="{{ done_dir }}/primary_post_restore.log"
 FAILURE_LOG="{{ done_dir }}/primary_post_restore_failure.log"
@@ -60,6 +62,34 @@ if [[ "$PROTECTION_MODE" == "${dataguard_protection_mode}" && $sqlplus_exit_code
 else 
     echo "ERROR: Dataguard configuration failed, verify logs" | tee -a "$FAILURE_LOG"
     exit 1
+fi
+
+#  Update tnsnames.ora with user provided port
+# Define the new entry
+STDBY_ENTRY="
+
+$standby_unique_name=
+(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases.standby.listener_port }}))
+  )
+  (CONNECT_DATA =
+    (SERVER=DEDICATED)
+    (SERVICE_NAME={{ databases.standby.db_service_name}})
+  )
+)"
+
+# Check if tnsnames.ora file exists
+if [[ ! -f "$tnsnames_file" ]]; then
+  echo "Error: TNS names file $tnsnames_file does not exist in $ORACLE_HOME." | tee -a "$FAILURE_LOG"
+else
+  # Check if the entry already exists in tnsnames.ora before appending
+  if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
+    echo "$STDBY_ENTRY" >> "$tnsnames_file"
+    echo "TNS alias added for standby database tnsnames.ora."
+  else
+    echo "Entry already exists. Skipping update."
+  fi
 fi
 
 # Check for failures and exit accordingly
