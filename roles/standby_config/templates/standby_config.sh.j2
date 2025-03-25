@@ -35,13 +35,21 @@ db_create_online_log_dest_1="'${db_create_online_log_dest_1}'"
 > "$MASTER_LOG"
 > "$FAILURE_LOG"
 
+# Find available port
+for PORT in {1521..1600}; do
+    netstat -an | grep -w LISTEN | grep -q ":$PORT" || { echo "Available port: $PORT"; exit 0; }
+done
+echo "No available ports found in range 1521-1600"
+exit 1
+
+
 # Update tnsnames.ora
 # Define the new entries
 STDBY_ENTRY="
 ${standby_unique_name}=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases[database_name].db_port }}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={$PORT}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
@@ -53,7 +61,7 @@ PRIMY_ENTRY="
 ${primary_unique_nam}=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ primary_host }})(PORT={{ databases.primary.db_port }}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ primary_host }})(PORT={$PORT}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
@@ -113,7 +121,7 @@ EOF
   cat "$PFILE"
 
 elif [[ "$WITH_BACKUP" == "false" ]]; then
-
+mkdir ${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener
 export TNS_ADMIN=${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora
   # Insert a static entry for standby in the listener.ora file if not updated before
   if ! grep -q "${standby_unique_name}" "$rman_listener_file"; then
@@ -126,7 +134,7 @@ export TNS_ADMIN=${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listen
 RMAN_LISTENER =
   (DESCRIPTION_LIST =
     (DESCRIPTION =
-      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT = 1523))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT = {$PORT}))
     )
   )
 
