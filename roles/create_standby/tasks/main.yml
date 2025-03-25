@@ -118,11 +118,10 @@
       when: inventory_hostname == primary_host
 
     - name: Update PORT for standby database in tnsnames.ora of primary site
-      ansible.builtin.lineinfile:
+      ansible.builtin.replace:
         path: "{{ databases.primary.oracle_db_home }}/network/admin/tnsnames.ora"
-        regexp: '(^{{ databases.standby.db_unique_name }}=.*?HOST={{ standby_host }}\)\(PORT=)\d+'
-        line: '\1{{ free_port }}'
-        backrefs: true
+        regexp: '(?<={{ databases.standby.db_unique_name }}=.*?HOST={{ standby_host }}\)\(PORT=)\d+'
+        replace: '\g<0>{{ free_port }}'
       when:
         - inventory_hostname == primary_host
 
