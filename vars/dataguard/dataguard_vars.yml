@@ -45,7 +45,7 @@
 # online_log_dest1:                Provide the value of db_create_online_log_dest_1 parameter in standby DB
 # db_recovery_file_dest:           Provide the value of db_recovery_file_dest parameter in standby DB
 # db_recovery_file_dest_size:      Provide recovery destination size only for standby site
-# db_port:                         Provide port# for both primary and standby database . Default db_port 1521
+# listener_port:                   Provide port# for both primary and standby database . Default listener_port 1521
 
 # Provide the ansible work directory on target system
 work_dir:   &work_dir "/tmp/ansible"
@@ -78,7 +78,7 @@ databases:
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
          file_dest: /DB01                 # the value of db_create_file_dest db parameter in primary DB
-         db_port: 1521
+         listener_port: 1521
   standby:
          db_name: orcl
          db_sid: orcl
@@ -91,4 +91,4 @@ databases:
          online_log_dest1: /DB01          # the value of db_create_online_log_dest_1 parameter in standby DB , just file system in case of JFS2
          db_recovery_file_dest: /DB01     # the value of db_recovery_file_dest parameter in standby DB , just file system in case of JFS2
          db_recovery_file_dest_size: 2G
-         db_port: 1521
+         listener_port: 1521

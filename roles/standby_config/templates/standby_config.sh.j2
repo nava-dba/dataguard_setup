@@ -14,8 +14,7 @@ standby_unique_name="{{ databases[database_name].db_unique_name }}"
 db_recovery_file_dest="{{ databases[database_name].db_recovery_file_dest }}"
 db_recovery_file_dest_size="{{ databases[database_name].db_recovery_file_dest_size }}"
 db_create_online_log_dest_1="{{ databases[database_name].online_log_dest1 }}"
-#tnsnames_file="$ORACLE_HOME/network/admin/tnsnames.ora"
-tnsnames_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/tnsnames.ora"
+tnsnames_file="$ORACLE_HOME/network/admin/tnsnames.ora"
 MASTER_LOG="{{ done_dir }}/standby_tns.log"
 FAILURE_LOG="{{ done_dir }}/standby_tns_fail.log"
 
@@ -24,9 +23,9 @@ log_archive_config="'DG_CONFIG=(${standby_unique_name},${primary_unique_name})'"
 log_file_name_convert="'${primary_diskgroup}/${primary_unique_name}','${standby_diskgroup}/${standby_unique_name}'"
 db_file_name_convert="'${primary_diskgroup}/${primary_unique_name}','${standby_diskgroup}/${standby_unique_name}'"
 audit_file_dest="'${oracle_db_base}/admin/${standby_unique_name}/adump'"
-local_listener="'(ADDRESS=(PROTOCOL=TCP)(HOST={{ standby_host }})(PORT={{ databases[database_name].db_port }}))'"
-#listener_file=${GRID_HOME}/network/admin/listener.ora
-rman_listener_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora"
+local_listener="'(ADDRESS=(PROTOCOL=TCP)(HOST={{ standby_host }})(PORT={{ databases[database_name].listener_port }}))'"
+listener_file=${GRID_HOME}/network/admin/listener.ora
+
 db_create_file_dest="'${standby_diskgroup}'"
 db_recovery_file_dest="'${db_recovery_file_dest}'"
 db_create_online_log_dest_1="'${db_create_online_log_dest_1}'"
@@ -35,29 +34,13 @@ db_create_online_log_dest_1="'${db_create_online_log_dest_1}'"
 > "$MASTER_LOG"
 > "$FAILURE_LOG"
 
-# Find available port
-PORT=""
-for P in {1521..1600}; do
-    if ! netstat -an | grep -w LISTEN | grep -q ":$P"; then
-        PORT=$P
-        echo "Available port: $PORT" | tee -a "$MASTER_LOG"
-        break
-    fi
-done
-
-# If no port was found, log the failure and exit
-if [[ -z "$PORT" ]]; then
-    echo "No available ports found in range 1521-1600" | tee -a "$FAILURE_LOG"
-    exit 1
-fi
-
 # Update tnsnames.ora
 # Define the new entries
 STDBY_ENTRY="
 ${standby_unique_name}=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={$PORT}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases[database_name].listener_port }}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
@@ -66,25 +49,16 @@ ${standby_unique_name}=
 )"
 
 PRIMY_ENTRY="
-${primary_unique_nam}=
+${primary_unique_name}=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ primary_host }})(PORT={$PORT}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ primary_host }})(PORT={{ databases.primary.listener_port }}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
     (SERVICE_NAME={{ databases.primary.db_service_name}})
   )
 )"
-
-# Create the file if it doesn't exist
-if [[ ! -f "$tnsnames_file" ]]; then
-    echo "tnsnames.ora not found. Creating new file..."
-    touch "$tnsnames_file"
-else 
-   cp "$tnsnames_file" "$tnsnames_file.bak"
-   echo "Using existing tnsnames.ora file..."
-fi
 
 # Check if the entries already exist in tnsnames.ora before appending
 if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
@@ -138,8 +112,37 @@ EOF
   cat "$PFILE"
 
 elif [[ "$WITH_BACKUP" == "false" ]]; then
+
+rman_listener_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora"
+tnsnames_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/tnsnames.ora"
 mkdir ${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener
 export TNS_ADMIN=${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora
+
+# Find available port
+PORT=""
+for P in {1521..1600}; do
+    if ! netstat -an | grep -w LISTEN | grep -q ":$P"; then
+        PORT=$P
+        echo "Available port: $PORT" | tee -a "$MASTER_LOG"
+        break
+    fi
+done
+
+# If no port was found, log the failure and exit
+if [[ -z "$PORT" ]]; then
+    echo "No available ports found in range 1521-1600" | tee -a "$FAILURE_LOG"
+    exit 1
+fi
+
+# Create the file if it doesn't exist
+if [[ ! -f "$tnsnames_file" ]]; then
+    echo "tnsnames.ora not found. Creating new file..."
+    touch "$tnsnames_file"
+else 
+   cp "$tnsnames_file" "$tnsnames_file.bak"
+   echo "Using existing tnsnames.ora file..."
+fi
+
   # Insert a static entry for standby in the listener.ora file if not updated before
   if ! grep -q "${standby_unique_name}" "$rman_listener_file"; then
     cp "$rman_listener_file" "${rman_listener_file}.bak"
@@ -188,6 +191,47 @@ EOL
     echo "Instance '${ORACLE_SID}' is not in UNKNOWN state."
     exit 1
   fi
+
+# Update tnsnames.ora
+# Define the new entries
+STDBY_ENTRY="
+${standby_unique_name}=
+(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={$PORT}))
+  )
+  (CONNECT_DATA =
+    (SERVER=DEDICATED)
+    (SERVICE_NAME={{ databases.standby.db_service_name}})
+  )
+)"
+
+PRIMY_ENTRY="
+${primary_unique_name}=
+(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ primary_host }})(PORT={{ databases.primary.listener_port }}))
+  )
+  (CONNECT_DATA =
+    (SERVER=DEDICATED)
+    (SERVICE_NAME={{ databases.primary.db_service_name}})
+  )
+)"
+
+# Check if the entries already exist in tnsnames.ora before appending
+if ! grep -q "$standby_unique_name=" "$tnsnames_file"; then    
+  echo "$STDBY_ENTRY" >> "$tnsnames_file"
+  echo "TNS alias added for standby database tnsnames.ora."
+else
+  echo "Entry already exists. Skipping update."
+fi
+
+if ! grep -q "$primary_unique_name=" "$tnsnames_file"; then    
+  echo "$PRIMY_ENTRY" >> "$tnsnames_file"
+  echo "TNS alias added for primary database tnsnames.ora."
+else
+  echo "Entry already exists. Skipping update."
+fi
 
   # Create an initialization parameter with only DB_NAME
   echo "DB_NAME=${primary_db_name}" > "$PFILE"

@@ -194,7 +194,7 @@ STDBY_ENTRY="
 $standby_unique_name=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases.standby.db_port }}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ databases.standby.listener_port }}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)

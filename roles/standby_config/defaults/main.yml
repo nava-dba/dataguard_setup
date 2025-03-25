@@ -11,4 +11,4 @@ prenfsconfig:
 
 ora_version: "19.3.0.0.0"
 with_backup: false
-db_port: 1521
+listener_port: 1521
