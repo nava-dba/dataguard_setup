@@ -116,7 +116,7 @@ elif [[ "$WITH_BACKUP" == "false" ]]; then
 rman_listener_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/rman_listener.ora"
 tnsnames_file="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener/tnsnames.ora"
 tnsnames_dir=" ${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
-export TNS_ADMIN=${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener
+export TNS_ADMIN=${tnsnames_dir}
 
 # Define port range
 START_PORT=1521
@@ -142,7 +142,7 @@ fi
 
 # Create the file if it doesn't exist
 if [[ ! -d "${tnsnames_dir}" ]]; then
-    mkdir "${tnsnames_dir}"
+    mkdir -p "${tnsnames_dir}"
 fi
 if [[ ! -f "$tnsnames_file" ]]; then
     echo "tnsnames.ora not found. Creating new file..."
