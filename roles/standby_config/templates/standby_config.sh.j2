@@ -124,12 +124,15 @@ END_PORT=1600
 
 # Find the first available port
 PORT=""
-for ((P=START_PORT; P<=END_PORT; P++)); do
+typeset -i P=$START_PORT
+
+while [ $P -le $END_PORT ]; do
     if ! netstat -an | awk '/LISTEN/ {print $4}' | grep -E ".*\.$P$" >/dev/null; then
         PORT=$P
         echo "Available port: $PORT"
         exit 0
     fi
+    P=$((P + 1))  # Increment
 done
 
 # If no port was found, log the failure and exit
