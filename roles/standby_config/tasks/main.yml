@@ -68,7 +68,7 @@
         mode: '0755'
       vars:
         database_name: "standby"
-      when: available_port is not defined
+      when: with_backup | bool
 
     - name: Copy Dataguard Pre-config script for standby with available_port
       ansible.builtin.template:
@@ -78,7 +78,7 @@
       vars:
         database_name: "standby"
         available_port: "{{ available_port }}"
-      when: available_port is defined
+      when: not with_backup | bool
 
     - name: Execute Dataguard config script on standby
       ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"

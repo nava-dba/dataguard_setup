@@ -67,7 +67,7 @@
         mode: '0755'
       vars:
         database_name: "primary"
-      when: available_port is not defined
+      when: with_backup | bool
 
     - name: Copy Dataguard Pre-config script for primary with available_port
       ansible.builtin.template:
@@ -77,7 +77,7 @@
       vars:
         database_name: "primary"
         available_port: "{{ available_port }}"
-      when: available_port is defined
+      when: not with_backup | bool
 
     - name: Execute Dataguard Pre-config script on primary
       ansible.builtin.command: "{{ scripts_dir }}/primary_config.sh"
