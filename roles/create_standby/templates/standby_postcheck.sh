@@ -18,7 +18,7 @@ TMP_FILE="${PFILE}.tmp"
 # Convert 'with_backup' variable to lowercase for consistency
 WITH_BACKUP="$(echo {{ with_backup }} | tr '[:upper:]' '[:lower:]')"
 
-if [[ "$WITH_BACKUP" == "false" ]]; then
+if [[ "$WITH_BACKUP" == "true" ]]; then
     # Check if RMAN Restore was successful
     if ! grep -q "Finished recover at" "$RESTORE_LOG_FILE"; then
         echo "ERROR: RMAN Recover failed or incomplete. Exiting..." | tee -a "$FAILURE_LOG"

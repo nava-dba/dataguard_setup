@@ -196,7 +196,7 @@ EOL
 # Update tnsnames.ora
 # Define the new entries
 STDBY_ENTRY="
-${standby_unique_name}=
+${standby_unique_name}_temp=
 (DESCRIPTION =
   (ADDRESS_LIST =
     (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port }}))
