@@ -142,10 +142,10 @@ check_existence "$db_recovery_file_dest"
 # Validate available space only for "$file_dest"
 check_size "$file_dest"
 
-# Create directories for JFS2 if not ASM
-if [[ "$grid_asm_flag" == "false" ]]; then
-    create_directories "$file_dest" "$standby_db_unique_name" "$db_oracle_user" "$db_oinstall_group"
-fi
+# Create directories for JFS2 if not ASM [ignore release 1]
+#if [[ "$grid_asm_flag" == "false" ]]; then
+#    create_directories "$file_dest" "$standby_db_unique_name" "$db_oracle_user" "$db_oinstall_group"
+#fi
 
 # Define port range
 if [[ "$WITH_BACKUP" == "false" ]]; then

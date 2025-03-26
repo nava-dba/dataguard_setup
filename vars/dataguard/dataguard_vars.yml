@@ -62,7 +62,7 @@ with_backup: false
 backup_location: /u01/backup/orcl
 sys_user: sys
 ignore_precheck: false
-grid_asm_flag: true
+grid_asm_flag: false
 #In this release maximum_performance mode only.
 dataguard_protection_mode: maximum_performance
 
@@ -77,7 +77,7 @@ databases:
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
-         file_dest: +DATA                 # the value of db_create_file_dest db parameter in primary DB
+         file_dest: /DB01/dbcl/datafiles                # the value of db_create_file_dest db parameter in primary DB
          listener_port: 1521
   standby:
          db_name: orcl
@@ -87,8 +87,8 @@ databases:
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
-         file_dest: +DATAS                 # the value of db_create_file_dest db parameter in standby DB , just file system in case of JFS2
-         online_log_dest1: +DATAS          # the value of db_create_online_log_dest_1 parameter in standby DB , just file system in case of JFS2
-         db_recovery_file_dest: +DATAS     # the value of db_recovery_file_dest parameter in standby DB , just file system in case of JFS2
-         db_recovery_file_dest_size: 10G
+         file_dest: /DB01/dbcl/datafiles                # the value of db_create_file_dest db parameter in standby DB , just file system in case of JFS2
+         online_log_dest1: /DB01/dbcl/redologs          # the value of db_create_online_log_dest_1 parameter in standby DB , just file system in case of JFS2
+         db_recovery_file_dest: /DB01     # the value of db_recovery_file_dest parameter in standby DB , just file system in case of JFS2
+         db_recovery_file_dest_size: 2G
          listener_port: 1521

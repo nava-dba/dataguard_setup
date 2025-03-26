@@ -227,7 +227,7 @@
         - not drprecheckdone.stat.exists
         - grid_user != db_oracle_user
 
-    - name: Execute Dataguard Pre-check script on standby
+    - name: Execute Dataguard Pre-check script on standby without ssh
       ansible.builtin.command: "{{ scripts_dir }}/standby_precheck.sh"
       args:
         executable: /bin/bash
