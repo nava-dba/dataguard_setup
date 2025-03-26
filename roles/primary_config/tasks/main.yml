@@ -39,7 +39,7 @@
 
 - name: Set available_port as fact on standby
   ansible.builtin.set_fact:
-    available_port: "{{ available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1') | trim }}"
+    available_port: "{{ (available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1'))[0] }}"
   when:
     - inventory_hostname == standby_host
     - available_port_slurp['content'] is defined
