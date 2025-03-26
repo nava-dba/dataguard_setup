@@ -94,7 +94,7 @@ SQL
 
     # Wait for standby to catch up
     echo "Waiting for 180 seconds to allow standby to sync..." | tee -a "$MASTER_LOG"
-    sleep 180
+    #sleep 180
 
     # Capture latest sequence number on standby
     sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
