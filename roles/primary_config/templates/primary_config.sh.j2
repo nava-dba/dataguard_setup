@@ -208,7 +208,7 @@ STDBY_ENTRY+="
 ${standby_unique_name}_temp=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port }}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port | default('0000') }}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)

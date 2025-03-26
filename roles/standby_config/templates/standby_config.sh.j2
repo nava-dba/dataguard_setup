@@ -135,7 +135,7 @@ elif [[ "$WITH_BACKUP" == "false" ]]; then
     echo "File $rman_listener_file does not exist. Creating it..."
     touch "$rman_listener_file"
   fi
-  
+
   # Insert a static entry for standby in the listener.ora file if not updated before
   if ! grep -q "${standby_unique_name}" "$rman_listener_file"; then
     cp "$rman_listener_file" "${rman_listener_file}.bak"
@@ -147,7 +147,7 @@ elif [[ "$WITH_BACKUP" == "false" ]]; then
 RMAN_LISTENER =
   (DESCRIPTION_LIST =
     (DESCRIPTION =
-      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT ={{ available_port }}))
+      (ADDRESS = (PROTOCOL = TCP)(HOST = {{ standby_host }})(PORT ={{ available_port | default('0000') }}))
     )
   )
 
@@ -199,7 +199,7 @@ STDBY_ENTRY="
 ${standby_unique_name}_temp=
 (DESCRIPTION =
   (ADDRESS_LIST =
-    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port }}))
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port | default('0000') }}))
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
