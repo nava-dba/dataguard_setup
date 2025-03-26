@@ -218,6 +218,18 @@
       changed_when: false
       when:
         - not drprecheckdone.stat.exists
+        - grid_user != db_oracle_user
+
+    - name: Execute Dataguard Pre-check script on standby
+      ansible.builtin.command: "{{ scripts_dir }}/standby_precheck.sh"
+      args:
+        executable: /bin/bash
+      register: precheck_output
+      failed_when: precheck_output.rc != 0
+      changed_when: false
+      when:
+        - not drprecheckdone.stat.exists
+        - grid_user == db_oracle_user
 
     - name: Debug Pre-check Output for standby database
       ansible.builtin.debug:
