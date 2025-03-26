@@ -47,6 +47,18 @@
         - adump
         - dpump
 
+    - name: Fetch available_port from standby
+      ansible.builtin.slurp:
+        src: "{{ done_dir }}/dataguard_precheck.log"
+      register: available_port_slurp
+
+    - name: Set available_port as fact on standby
+      ansible.builtin.set_fact:
+        available_port: "{{ (available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1'))[0] }}"
+      when:
+        - available_port_slurp['content'] is defined
+        - "'Available port:' in (available_port_slurp['content'] | b64decode)"
+
     - name: Copy Dataguard config script for standby
       ansible.builtin.template:
         src: standby_config.sh.j2
@@ -55,7 +67,7 @@
       vars:
         database_name: "standby"
         primary_diskgroup: "{{ standby_diskgroup }}"
-        available_port: "{{ hostvars['standby']['available_port'] }}"
+        available_port: "{{ available_port }}"
 
     - name: Execute Dataguard config script on standby
       ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"

@@ -225,35 +225,6 @@
       when:
         - not drprecheckdone.stat.exists
 
-    - name: Checking if Dataguard setup was already done
-      ansible.builtin.stat:
-        path: "{{ done_dir }}/drprecheck.success"
-      register: drprecheckdone
-
-# Fecth available port from standby and make it available for global use
-- name: Ensure port available from standby to primary
-  when:
-    - inventory_hostname == standby_host
-    - not with_backup | bool
-    - drprecheckdone.stat.exists
-  block:
-    - name: Read available port from log file
-      ansible.builtin.shell: "grep 'Available port:' {{ done_dir }}/dataguard_precheck.log | awk '{print $3}'"
-      register: available_port_output
-      changed_when: false
-
-    - name: Store available port as fact
-      ansible.builtin.set_fact:
-        available_port: "{{ available_port_output.stdout | trim }}"
-
-    - name: Share available port with both primary and standby
-      ansible.builtin.add_host:
-        name: "{{ item }}"
-        available_port: "{{ available_port }}"
-      loop:
-        - "{{ primary_host }}"
-        - "{{ standby_host }}"
-
 # Precheck: System Configuration Comparison
 - name: System Configuration Comparison
   block:
