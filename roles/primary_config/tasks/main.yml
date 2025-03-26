@@ -34,12 +34,12 @@
 - name: Fetch available_port from standby
   ansible.builtin.slurp:
     src: "{{ done_dir }}/dataguard_precheck.log"
-  register: available_port
+  register: available_port_slurp
   when: inventory_hostname == standby_host
 
 - name: Set available_port as fact on standby
   ansible.builtin.set_fact:
-    available_port: "{{ available_port_slurp['content'] | b64decode | regex_search('Available port: (\\d+)', '\\1') | first | trim }}"
+    available_port: "{{ available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1') | trim }}"
   when:
     - inventory_hostname == standby_host
     - available_port_slurp['content'] is defined
