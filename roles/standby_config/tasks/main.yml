@@ -61,17 +61,24 @@
         - "'Available port:' in (available_port_slurp['content'] | b64decode)"
         - not with_backup | bool
 
-    - name: Copy Dataguard config script for standby
+    - name: Copy Dataguard Pre-config script for standby
       ansible.builtin.template:
         src: standby_config.sh.j2
         dest: "{{ scripts_dir }}/standby_config.sh"
         mode: '0755'
       vars:
         database_name: "standby"
-        primary_diskgroup: "{{ standby_diskgroup }}"
-      pre_tasks:
-        - set_fact: available_port={{ available_port }}
-          when: available_port_var is defined
+      when: available_port is not defined
+
+    - name: Copy Dataguard Pre-config script for standby with available_port
+      ansible.builtin.template:
+        src: standby_config.sh.j2
+        dest: "{{ scripts_dir }}/standby_config.sh"
+        mode: '0755'
+      vars:
+        database_name: "standby"
+        available_port: "{{ available_port }}"
+      when: available_port is defined
 
     - name: Execute Dataguard config script on standby
       ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"
