@@ -68,9 +68,9 @@
       vars:
         database_name: "primary"
         standby_diskgroup: "{{ primary_diskgroup }}"
-        {% if available_port is defined %}
-        available_port: "{{ available_port }}"
-        {% endif %}
+      pre_tasks:
+        - set_fact: available_port={{ available_port }}
+          when: available_port_var is defined
 
     - name: Execute Dataguard Pre-config script on primary
       ansible.builtin.command: "{{ scripts_dir }}/primary_config.sh"
