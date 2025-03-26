@@ -59,7 +59,7 @@ db_oracle_user: oracle
 grid_user: grid
 db_oinstall_group: oinstall
 with_backup: false
-backup_location: /u01/backup/orcl
+backup_location: /u01/backup/dbcl
 sys_user: sys
 ignore_precheck: false
 grid_asm_flag: false
@@ -70,25 +70,26 @@ dataguard_protection_mode: maximum_performance
 
 databases:  
   primary:
-         db_name: orcl
-         db_sid: orcl
-         db_unique_name: orcl
-         db_service_name: orcl
+         db_name: dbcl
+         db_sid: dbcl
+         db_unique_name: dbcl
+         db_service_name: dbcl
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
          file_dest: /DB01/dbcl/datafiles                # the value of db_create_file_dest db parameter in primary DB
          listener_port: 1521
   standby:
-         db_name: orcl
-         db_sid: orcl
-         db_unique_name: orcls
-         db_service_name: orcls
+         db_name: dbcl
+         db_sid: dbcl
+         db_unique_name: dbcls
+         db_service_name: dbcls
          oracle_db_home: /u01/product/19.3.0.0.0/database
          oracle_db_base: /u01/base
          grid_db_home: /u01/grid/home
          file_dest: /DB01/dbcl/datafiles                # the value of db_create_file_dest db parameter in standby DB , just file system in case of JFS2
          online_log_dest1: /DB01/dbcl/redologs          # the value of db_create_online_log_dest_1 parameter in standby DB , just file system in case of JFS2
-         db_recovery_file_dest: /DB01     # the value of db_recovery_file_dest parameter in standby DB , just file system in case of JFS2
+         db_recovery_file_dest: /DB01                   # the value of db_recovery_file_dest parameter in standby DB , just file system in case of JFS2
+         controlfile_location: /DB01/dbcl/controlfiles           # the value of controlfile location in standby DB , just file system in case of JFS2
          db_recovery_file_dest_size: 2G
          listener_port: 1521

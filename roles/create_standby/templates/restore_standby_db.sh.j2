@@ -4,6 +4,7 @@ ORACLE_SID={{ databases[database_name].db_sid }}
 ORACLE_HOME={{ databases[database_name].oracle_db_home }}
 PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
 standby_unique_name="{{ databases[database_name].db_unique_name }}"
+controlfile={{ databases[database_name].controlfile_location }}
 tnsnames_dir="${ORACLE_HOME}/network/admin/${standby_unique_name}_rman_listener"
 export TNS_ADMIN="${tnsnames_dir}"
 export ORACLE_HOME="${ORACLE_HOME}"
@@ -23,7 +24,6 @@ standby_diskgroup={{ databases[database_name].file_dest }}
 # Define the number of CPU cores
 standby_cpu_core={{ standby_cpu_core }}
 primary_cpu_core={{ primary_cpu_core }}
-controlfile={{ controlfile_location }}
 
 # Check if the standby database is already running by checking PMON process
 if ps -ef | grep "[p]mon_${ORACLE_SID}" > /dev/null; then
@@ -163,7 +163,7 @@ esac
     echo "   set db_unique_name='${standby_unique_name}'"
     echo "   set db_file_name_convert=${db_file_name_convert}"
     echo "   set log_file_name_convert=${log_file_name_convert}"
-    echo "   set control_files='${db_create_file_dest}/${standby_unique_name}/${controlfile}/${standby_unique_name}_control01.ctl'"
+    echo "   set control_files='${controlfile}/${standby_unique_name}_control01.ctl'"
     echo "   set log_archive_max_processes='5'"
     echo "   set fal_client='${standby_unique_name}'"
     echo "   set fal_server='${primary_unique_name}'"
