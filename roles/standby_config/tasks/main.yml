@@ -51,6 +51,7 @@
       ansible.builtin.slurp:
         src: "{{ done_dir }}/dataguard_precheck.log"
       register: available_port_slurp
+      when: not with_backup | bool
 
     - name: Set available_port as fact on standby
       ansible.builtin.set_fact:
@@ -58,6 +59,7 @@
       when:
         - available_port_slurp['content'] is defined
         - "'Available port:' in (available_port_slurp['content'] | b64decode)"
+        - not with_backup | bool
 
     - name: Copy Dataguard config script for standby
       ansible.builtin.template:
@@ -67,7 +69,7 @@
       vars:
         database_name: "standby"
         primary_diskgroup: "{{ standby_diskgroup }}"
-        available_port: "{{ available_port }}"
+        available_port: "{{ available_port | default(omit) }}"
 
     - name: Execute Dataguard config script on standby
       ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"

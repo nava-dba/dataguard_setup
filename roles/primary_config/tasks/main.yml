@@ -31,26 +31,29 @@
   register: primarypreconfigdone
   when: inventory_hostname == primary_host
 
-- name: Fetch available_port from standby
-  ansible.builtin.slurp:
-    src: "{{ done_dir }}/dataguard_precheck.log"
-  register: available_port_slurp
-  when: inventory_hostname == standby_host
+- name: Assign available port from stnadby to primary for RMAN Duplicate
+  when: not with_backup | bool
+  block:
+    - name: Fetch available_port from standby
+      ansible.builtin.slurp:
+        src: "{{ done_dir }}/dataguard_precheck.log"
+      register: available_port_slurp
+      when: inventory_hostname == standby_host
 
-- name: Set available_port as fact on standby
-  ansible.builtin.set_fact:
-    available_port: "{{ (available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1'))[0] }}"
-  when:
-    - inventory_hostname == standby_host
-    - available_port_slurp['content'] is defined
-    - "'Available port:' in (available_port_slurp['content'] | b64decode)"
+    - name: Set available_port as fact on standby
+      ansible.builtin.set_fact:
+        available_port: "{{ (available_port_slurp['content'] | b64decode | regex_search('Available port:\\s*(\\d+)', '\\1'))[0] }}"
+      when:
+        - inventory_hostname == standby_host
+        - available_port_slurp['content'] is defined
+        - "'Available port:' in (available_port_slurp['content'] | b64decode)"
 
-- name: Share available_port from standby to primary
-  ansible.builtin.set_fact:
-    available_port: "{{ hostvars[standby_host].available_port }}"
-  when:
-    - inventory_hostname == primary_host
-    - hostvars[standby_host].available_port is defined
+    - name: Share available_port from standby to primary
+      ansible.builtin.set_fact:
+        available_port: "{{ hostvars[standby_host].available_port }}"
+      when:
+        - inventory_hostname == primary_host
+        - hostvars[standby_host].available_port is defined
 
 - name: Run Dataguard Pre-config tasks for primary
   when:
@@ -65,7 +68,7 @@
       vars:
         database_name: "primary"
         standby_diskgroup: "{{ primary_diskgroup }}"
-        available_port: "{{ available_port }}"
+        available_port: "{{ available_port | default(omit) }}"
 
     - name: Execute Dataguard Pre-config script on primary
       ansible.builtin.command: "{{ scripts_dir }}/primary_config.sh"

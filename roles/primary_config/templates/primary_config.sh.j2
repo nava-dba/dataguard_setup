@@ -188,9 +188,8 @@ if [[ $sql_exit_code -ne 0 ]]; then
 fi
 
 # 9. Update tnsnames.ora
-# Define the new entry
+# Define the standard entry
 STDBY_ENTRY="
-
 $standby_unique_name=
 (DESCRIPTION =
   (ADDRESS_LIST =
@@ -198,9 +197,13 @@ $standby_unique_name=
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
-    (SERVICE_NAME={{ databases.standby.db_service_name}})
+    (SERVICE_NAME={{ databases.standby.db_service_name }})
   )
-)
+)"
+
+# Add temporary entry only if {{ with_backup }} is false
+{% if not with_backup | bool %}
+STDBY_ENTRY+="
 
 ${standby_unique_name}_temp=
 (DESCRIPTION =
@@ -209,9 +212,10 @@ ${standby_unique_name}_temp=
   )
   (CONNECT_DATA =
     (SERVER=DEDICATED)
-    (SERVICE_NAME={{ databases.standby.db_service_name}})
+    (SERVICE_NAME={{ databases.standby.db_service_name }})
   )
 )"
+{% endif %}
 
 # Check if tnsnames.ora file exists
 if [[ ! -f "$tnsnames_file" ]]; then
