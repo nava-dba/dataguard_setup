@@ -69,7 +69,9 @@
       vars:
         database_name: "standby"
         primary_diskgroup: "{{ standby_diskgroup }}"
-        available_port: "{{ available_port | default(None) }}"
+        {% if available_port is defined %}
+        available_port: "{{ available_port }}"
+        {% endif %}
 
     - name: Execute Dataguard config script on standby
       ansible.builtin.command: "{{ scripts_dir }}/standby_config.sh"
