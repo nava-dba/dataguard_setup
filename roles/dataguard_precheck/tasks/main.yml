@@ -246,13 +246,13 @@
       ansible.builtin.set_fact:
         available_port: "{{ available_port_output.stdout | trim }}"
 
-    - name: Share available port with both primary and standby
-      ansible.builtin.add_host:
-        name: "{{ item }}"
-        available_port: "{{ available_port }}"
-      loop:
-        - "{{ primary_host }}"
-        - "{{ standby_host }}"
+- name: Share available port with both primary and standby
+  ansible.builtin.add_host:
+    name: "{{ item }}"
+    available_port: "{{ available_port }}"
+  loop:
+    - "{{ primary_host }}"
+    - "{{ standby_host }}"
 
 # Precheck: System Configuration Comparison
 - name: System Configuration Comparison

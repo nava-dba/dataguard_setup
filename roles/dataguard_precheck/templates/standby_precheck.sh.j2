@@ -183,6 +183,5 @@ fi
 
 echo "Pre-checks passed for standby database!" | tee -a "$MASTER_LOG"
 touch "{{ done_dir }}/drprecheck.success"
-chmod 777 "{{ done_dir }}/dataguard_precheck.log"
 rm -f "$FAILURE_LOG"
 exit 0
