@@ -200,6 +200,17 @@ $standby_unique_name=
     (SERVER=DEDICATED)
     (SERVICE_NAME={{ databases.standby.db_service_name}})
   )
+)
+
+${standby_unique_name}_temp=
+(DESCRIPTION =
+  (ADDRESS_LIST =
+    (ADDRESS=(PROTOCOL=TCP) (HOST={{ standby_host }})(PORT={{ available_port }}))
+  )
+  (CONNECT_DATA =
+    (SERVER=DEDICATED)
+    (SERVICE_NAME={{ databases.standby.db_service_name}})
+  )
 )"
 
 # Check if tnsnames.ora file exists

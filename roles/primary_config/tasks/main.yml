@@ -44,6 +44,7 @@
       vars:
         database_name: "primary"
         standby_diskgroup: "{{ primary_diskgroup }}"
+        available_port: "{{ hostvars['primary']['available_port'] }}"
 
     - name: Execute Dataguard Pre-config script on primary
       ansible.builtin.command: "{{ scripts_dir }}/primary_config.sh"

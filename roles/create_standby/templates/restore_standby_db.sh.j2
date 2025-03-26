@@ -26,7 +26,6 @@ primary_cpu_core={{ primary_cpu_core }}
 controlfile={{ controlfile_location }}
 
 # Check if the standby database is already running by checking PMON process
-# Check if the standby database is already running by checking PMON process
 if ps -ef | grep "[p]mon_${ORACLE_SID}" > /dev/null; then
     echo "Standby database is already running." | tee -a "$MASTER_LOG"
 
@@ -54,7 +53,6 @@ else
     exit;
 EOF
 fi
-
 
 # Convert 'with_backup' variable to lowercase for consistency
 WITH_BACKUP="$(echo {{ with_backup }} | tr '[:upper:]' '[:lower:]')"
@@ -181,7 +179,7 @@ esac
     echo "EXIT;"
 } > "$RMAN_SCRIPT"
 
-rman target {{ sys_user }}/$1@{{ databases.primary.db_sid }} auxiliary {{ sys_user }}/$1@${standby_unique_name} cmdfile={{ scripts_dir }}/rman_restore.rcv | tee -a "$MASTER_LOG"
+rman target {{ sys_user }}/$1@{{ databases.primary.db_sid }} auxiliary {{ sys_user }}/$1@${standby_unique_name}_temp cmdfile={{ scripts_dir }}/rman_restore.rcv | tee -a "$MASTER_LOG"
 
 # Capture RMAN exit status
 rman_exit_code=$?

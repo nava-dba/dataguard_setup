@@ -146,6 +146,31 @@ if [[ "$grid_asm_flag" == "false" ]]; then
     create_directories "$file_dest" "$standby_db_unique_name" "$db_oracle_user" "$db_oinstall_group"
 fi
 
+# Define port range
+if [[ "$WITH_BACKUP" == "false" ]]; then
+  START_PORT=1521
+  END_PORT=1600
+  
+  # Find the first available port
+  PORT=""
+  typeset -i P=$START_PORT
+  
+  while [ $P -le $END_PORT ]; do
+      if ! netstat -an | awk '/LISTEN/ {print $4}' | grep -E ".*\.$P$" >/dev/null; then
+          PORT=$P
+          echo "Available port: $PORT" | tee -a "$MASTER_LOG"
+          break
+      fi
+      P=$((P + 1))  # Increment
+  done
+  
+  # If no port was found, log the failure and exit
+  if [[ -z "$PORT" ]]; then
+      echo "No available ports found in range 1521-1600" | tee -a "$FAILURE_LOG"
+      exit 1
+  fi
+fi
+
 echo "All checks completed successfully." | tee -a "$MASTER_LOG"
 
 # Check for failures and exit accordingly

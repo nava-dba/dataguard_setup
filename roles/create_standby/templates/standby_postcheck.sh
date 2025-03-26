@@ -15,6 +15,8 @@ TMP_FILE="${PFILE}.tmp"
 # Ensure log files are empty before running
 > "$MASTER_LOG"
 > "$FAILURE_LOG"
+# Convert 'with_backup' variable to lowercase for consistency
+WITH_BACKUP="$(echo {{ with_backup }} | tr '[:upper:]' '[:lower:]')"
 
 if [[ "$WITH_BACKUP" == "false" ]]; then
     # Check if RMAN Restore was successful
@@ -90,10 +92,19 @@ elif [[ "$WITH_BACKUP" == "false" ]]; then
 sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SHUTDOWN IMMEDIATE;
 STARTUP MOUNT;
+ALTER SYSTEM SET LOCAL_LISTENER='(ADDRESS=(PROTOCOL=TCP)(HOST={{ standby_host }})(PORT={{ databases.standby.listener_port }}))';
 ALTER SYSTEM REGISTER;
 EXIT;
 SQL
 
+    # Capture SQL*Plus exit status
+    sqlplus_exit_code=$?
+
+    # Validate SQL*Plus exit status
+    if [[ $sqlplus_exit_code -ne 0 ]]; then
+        echo "ERROR: SQL*Plus command failed. Check logs for details." | tee -a "$FAILURE_LOG"
+        exit 1
+    fi
 else
     echo "ERROR: Invalid value for 'with_backup'. Please provide 'true' or 'false'." | tee -a "$FAILURE_LOG"
     exit 1
