@@ -40,7 +40,7 @@
   block:
     - name: Copy DBID and control file location script from primary database
       ansible.builtin.template:
-        src: primary_dbid.sh
+        src: files/primary_dbid.sh
         dest: "{{ scripts_dir }}/primary_dbid.sh"
         mode: '0755'
 
@@ -125,7 +125,7 @@
   block:
     - name: Copy RMAN Restore Post-Processing Script
       ansible.builtin.template:
-        src: standby_postcheck.sh
+        src: files/standby_postcheck.sh
         dest: "{{ scripts_dir }}/standby_postcheck.sh"
         mode: '0755'
       vars:
@@ -171,7 +171,7 @@
   block:
     - name: Copy Protection Mode Post-Processing Script on primary
       ansible.builtin.template:
-        src: primary_postcheck.sh
+        src: files/primary_postcheck.sh
         dest: "{{ scripts_dir }}/primary_postcheck.sh"
         mode: '0755'
       vars:
