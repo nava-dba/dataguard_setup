@@ -91,7 +91,7 @@ if [[ "$WITH_BACKUP" == "true" ]]; then
     echo "    catalog start with '{{ backup_location }}/' noprompt;"
     echo ""
     echo "    # Restore database"
-    echo "    set newname for database to '{{ databases[database_name].file_dest }}';"
+    echo "    set newname for database to '{{ databases[database_name].file_dest }}/%U';"
     echo "    restore database;"
     echo "    switch datafile all;"
     echo "    recover database;"
