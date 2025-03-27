@@ -61,9 +61,6 @@ WITH_BACKUP="$(echo {{ with_backup }} | tr '[:upper:]' '[:lower:]')"
 if [[ "$WITH_BACKUP" == "true" ]]; then
 
  {% set backup_format = backup_location ~ '/%U' %}
- {% set ctrl_backup_format = backup_location ~ '/controlfile_%d_%T_%s_%p.bkp' %}
- {% set controlfile_tag = "CONTROLFILE_BACKUP" %}
- {% set fullbackup_tag = "FULL_ARC_BACKUP" %}
  
  # Get the latest control file backup
  LATEST_CONTROLFILE=$(ls -t {{ backup_location }}/controlfile_*.bkp  | head -1)
