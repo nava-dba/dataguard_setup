@@ -219,6 +219,7 @@
       when:
         - not drprecheckdone.stat.exists
         - grid_user != db_oracle_user
+        - grid_asm_flag | bool
 
     - name: Debug Pre-check Output for standby database
       ansible.builtin.debug:
@@ -226,6 +227,7 @@
       when:
         - not drprecheckdone.stat.exists
         - grid_user != db_oracle_user
+        - grid_asm_flag | bool
 
     - name: Execute Dataguard Pre-check script on standby without ssh
       ansible.builtin.command: "{{ scripts_dir }}/standby_precheck.sh"
@@ -236,14 +238,20 @@
       changed_when: false
       when:
         - not drprecheckdone.stat.exists
-        - grid_user == db_oracle_user
+        - >
+          (grid_user == db_oracle_user and grid_asm_flag | bool)
+          or
+          (not grid_asm_flag | bool)
 
     - name: Debug Pre-check Output for standby database
       ansible.builtin.debug:
         msg: "{{ precheck_output.stdout_lines }}"
       when:
         - not drprecheckdone.stat.exists
-        - grid_user == db_oracle_user
+                - >
+          (grid_user == db_oracle_user and grid_asm_flag | bool)
+          or
+          (not grid_asm_flag | bool)
 
 # Precheck: System Configuration Comparison
 - name: System Configuration Comparison
