@@ -14,6 +14,7 @@ standby_unique_name="{{ databases[database_name].db_unique_name }}"
 db_recovery_file_dest="{{ databases[database_name].db_recovery_file_dest }}"
 db_recovery_file_dest_size="{{ databases[database_name].db_recovery_file_dest_size }}"
 db_create_online_log_dest_1="{{ databases[database_name].online_log_dest1 }}"
+controlfile_location="{{ databases[database_name].controlfile_location }}"
 tnsnames_file="$ORACLE_HOME/network/admin/tnsnames.ora"
 MASTER_LOG="{{ done_dir }}/standby_tns.log"
 FAILURE_LOG="{{ done_dir }}/standby_tns_fail.log"
@@ -29,6 +30,7 @@ listener_file=${GRID_HOME}/network/admin/listener.ora
 db_create_file_dest="'${standby_diskgroup}'"
 db_recovery_file_dest="'${db_recovery_file_dest}'"
 db_create_online_log_dest_1="'${db_create_online_log_dest_1}'"
+controlfile_location='${controlfile_location}'"
 
 # Ensure log files are empty before running
 > "$MASTER_LOG"
@@ -91,7 +93,7 @@ if [[ "$WITH_BACKUP" == "true" ]]; then
 *.db_unique_name=${standby_unique_name}
 *.audit_file_dest=${audit_file_dest}
 *.log_archive_dest_1=${log_archive_dest_1}
-*.control_files=${db_create_online_log_dest_1}
+*.control_files=${controlfile_location}
 *.LOG_FILE_NAME_CONVERT=${log_file_name_convert}
 *.DB_FILE_NAME_CONVERT=${db_file_name_convert}
 *.db_create_file_dest=${db_create_file_dest}
