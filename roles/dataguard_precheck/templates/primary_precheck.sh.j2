@@ -36,7 +36,7 @@ SELECT 'REDO_SIZES:' || LISTAGG(bytes, ',') WITHIN GROUP (ORDER BY group#) FROM 
 SELECT 'MULTIPLEX_CHECK:' || COUNT(*) FROM v\$logfile lf JOIN v\$log l ON lf.group# = l.group# GROUP BY lf.group# HAVING COUNT(*) < 2;
 
 -- Precheck 4: Dataguard already exists
-SELECT 'DG_EXISTS:' || LISTAGG(DB_UNIQUE_NAME,',') WITHIN GROUP (ORDER BY 1) AS LIST FROM v$dataguard_config WHERE db_unique_name <> (SELECT db_unique_name FROM v$database);
+SELECT 'DG_EXISTS:' || LISTAGG(DB_UNIQUE_NAME,',') WITHIN GROUP (ORDER BY 1) AS LIST FROM v\$dataguard_config WHERE db_unique_name <> (SELECT db_unique_name FROM v\$database);
 
 EXIT;
 SQL
