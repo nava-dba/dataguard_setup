@@ -1,6 +1,6 @@
-default_gipass: oracle               # ASM sys user password.
+default_gipass:                      # ASM sys user password.
 default_dbpass: Oracle4u             # Sys user password.
 
-asm_user_password: Welcome123        # Grid clusterware owner password 
+asm_user_password:        # Grid clusterware owner password 
 mos_login:                           # My Oracle Support Username.
 mos_password:                        # My Oracle Support Password.

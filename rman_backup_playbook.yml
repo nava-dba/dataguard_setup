@@ -1,5 +1,4 @@
-# This playbook is used to configure dataguard for 19c.
-#
+# This playbook is used to secure backup to create dataguard for 19c.
 # Before executing this playbook, please refer the documentation inside the docs directory.
 #
 # - hosts: all_nodes                            # Provide the name of the target lpar registered in ansible inventory.

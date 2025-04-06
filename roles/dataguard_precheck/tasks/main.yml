@@ -24,6 +24,39 @@
   when: dataguarddone.stat.exists
   run_once: true
 
+- name: Check SSH equivalence from oracle to grid on standby host
+  when:
+    - inventory_hostname == standby_host
+    - not drprecheckdone.stat.exists
+    - grid_user != db_oracle_user
+    - grid_asm_flag | bool
+  block:
+    - name: Check SSH from oracle to grid@localhost (only on standby)
+      ansible.builtin.command: ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=5 {{ grid_user }}@localhost "echo OK"
+      register: ssh_check
+      ignore_errors: true
+      changed_when: false
+
+    - name: Set fact if SSH equivalence is not working
+      ansible.builtin.set_fact:
+        ssh_equiv_failed: true
+      when:
+        - ssh_check.rc != 0
+        - "'OK' not in ssh_check.stdout"
+
+    - name: Fail the play if SSH equivalence check failed on standby
+      ansible.builtin.meta: end_play
+      when:
+        - ssh_equiv_failed is defined and ssh_equiv_failed
+      run_once: true
+
+    - name: Debug - SSH equivalence OK
+      ansible.builtin.debug:
+        msg: "SSH equivalence from oracle to grid is working fine."
+      when:
+        - ssh_check.rc == 0
+        - "'OK' in ssh_check.stdout"
+
 - name: Verify network connectivity between primary and standby
   block:
     - name: Verify primary can ping standby host

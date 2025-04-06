@@ -34,6 +34,10 @@ SELECT 'REDO_SIZES:' || LISTAGG(bytes, ',') WITHIN GROUP (ORDER BY group#) FROM 
 
 -- Precheck 4: Redo logs multiplexing
 SELECT 'MULTIPLEX_CHECK:' || COUNT(*) FROM v\$logfile lf JOIN v\$log l ON lf.group# = l.group# GROUP BY lf.group# HAVING COUNT(*) < 2;
+
+-- Precheck 4: Dataguard already exists
+SELECT 'DG_EXISTS:' || LISTAGG(DB_UNIQUE_NAME,',') WITHIN GROUP (ORDER BY 1) AS LIST FROM v$dataguard_config WHERE db_unique_name <> (SELECT db_unique_name FROM v$database);
+
 EXIT;
 SQL
 
@@ -50,6 +54,7 @@ DISK_COUNT=$(grep "DISK_COUNT:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 REDO_SIZES=$(grep "REDO_SIZES:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 UNIQUE_SIZES=$(echo "$REDO_SIZES" | tr ',' '\n' | sort -u | wc -l)
 MULTIPLEX_COUNT=$(grep "MULTIPLEX_CHECK:" "$MASTER_LOG" | awk -F ':' '{print $2}')
+DG_EXISTS=$(grep "DG_EXISTS:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 
 # Ensure MULTIPLEX_COUNT has a valid default value if empty
 MULTIPLEX_COUNT=${MULTIPLEX_COUNT:-2}  # Default to 2 if empty
@@ -78,7 +83,13 @@ if [[ "$MULTIPLEX_COUNT" -lt 2 ]]; then
     echo "ERROR: Redo logs are NOT multiplexed!" | tee -a "$FAILURE_LOG"
 fi
 
-# 5. Check for failures and exit accordingly
+# 5. Validate dataguard do not exists
+if [[ "$DG_EXISTS" == {{ databases.standby.db_unique_name }} ]]; then
+    echo "ERROR: Dataguard setup already exists!" | tee -a "$FAILURE_LOG"
+    exit 1
+fi
+
+# 6. Check for failures and exit accordingly
 if [[ -s "$FAILURE_LOG" ]]; then
     cat "$FAILURE_LOG"
     rm -f "$FAILURE_LOG"
