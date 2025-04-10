@@ -25,6 +25,7 @@
         fail_msg: "Invalid protection mode '{{ dataguard_protection_mode }}'. Only 'maximum_performance' is allowed in this release."
       delegate_to: localhost
       run_once: true
+      tags: always
 
   roles:
     - role: dataguard_precheck
