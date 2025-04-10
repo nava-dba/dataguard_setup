@@ -52,12 +52,9 @@ ARCHIVELOG_MODE=$(grep "ARCHIVELOG_MODE:" "$MASTER_LOG" | awk -F ':' '{print $2}
 DATABASE_SIZE=$(grep "DATABASE_SIZE:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 DISK_COUNT=$(grep "DISK_COUNT:" "$MASTER_LOG" | awk -F ':' '{print $2}')
 REDO_SIZES=$(grep "REDO_SIZES:" "$MASTER_LOG" | awk -F ':' '{print $2}')
-UNIQUE_SIZES=$(echo "$REDO_SIZES" | tr ',' '\n' | sort -u | wc -l)
-MULTIPLEX_COUNT=$(grep "MULTIPLEX_CHECK:" "$MASTER_LOG" | awk -F ':' '{print $2}')
+UNIQUE_SIZES=$(echo "$REDO_SIZES" | tr ',' '\n' | sort -u | uniq | wc -l | awk '{print $1}')
+MULTIPLEX_COUNT=$(grep "MULTIPLEX_CHECK:" "$MASTER_LOG" | awk -F ':' '{print $2}' | awk '$1 < 2' | wc -l)
 DG_EXISTS=$(grep "DG_EXISTS:" "$MASTER_LOG" | awk -F ':' '{print $2}')
-
-# Ensure MULTIPLEX_COUNT has a valid default value if empty
-MULTIPLEX_COUNT=${MULTIPLEX_COUNT:-2}  # Default to 2 if empty
 
 # 1. Validate ARCHIVELOG mode
 if [[ "$ARCHIVELOG_MODE" != "ARCHIVELOG" ]]; then
@@ -79,7 +76,7 @@ if [[ "$UNIQUE_SIZES" -gt 1 ]]; then
 fi
 
 # 4. Validate redo log multiplexing
-if [[ "$MULTIPLEX_COUNT" -lt 2 ]]; then
+if [[ "$MULTIPLEX_COUNT" -gt 0 ]]; then
     echo "ERROR: Redo logs are NOT multiplexed!" | tee -a "$FAILURE_LOG"
 fi
 
