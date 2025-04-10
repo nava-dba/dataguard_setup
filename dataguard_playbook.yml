@@ -17,18 +17,27 @@
     - vars/dataguard/dataguard_vars.yml
     - vars/vault.yml
 
+  pre_tasks:
+    - name: Validate user input - only 'maximum_performance' is allowed
+      ansible.builtin.assert:
+        that:
+          - dataguard_protection_mode == 'maximum_performance'
+        fail_msg: "Invalid protection mode '{{ dataguard_protection_mode }}'. Only 'maximum_performance' is allowed in this release."
+      delegate_to: localhost
+      run_once: true
+
   roles:
     - role: dataguard_precheck
       tags: dataguard_precheck
 
-    - role: primary_config
-      tags: primary_config
+    - role: dataguard_primary_config
+      tags: dataguard_primary_config
 
-    - role: standby_config
-      tags: standby_config
+    - role: dataguard_standby_config
+      tags: dataguard_standby_config
 
-    - role: create_standby
-      tags: create_standby
+    - role: dataguard_create_standby
+      tags: dataguard_create_standby
 
-    - role: post_sync_check
-      tags: post_sync_check
+    - role: dataguard_post_sync_check
+      tags: dataguard_post_sync_check
