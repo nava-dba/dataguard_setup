@@ -8,7 +8,6 @@
 ###############################################################################
 
 ## Section A - Common Variables
-# rac:                       Specify true if rac setup or false in case of single instance.
 # primary_host:              Provide hostname for primary server
 # standby_host:              Provide hostname for standby server
 # db_oracle_user:            Provide the RDBMS software owner, ex: oracle.
@@ -21,7 +20,7 @@
 # grid_asm_flag:             Specify true if ASM is used for storage or false if not used. Default value true
 # ignore_precheck:           Provide true or false based on requirement to continue with warnings. Default value  false .
 # dataguard_protection_mode: Provide data protection modes out of three maximum_availability, maximum_performance, or maximum_protection.
-#                            default to maximum_performance. Phase 1 rollout is with maximum_performance mode only in this release.
+#                            default to maximum_performance. Current release supports maximum_performance mode only .
 #
 #                                   |----------------------------------------|---------------------------------|
 #                                   |             Standby Mode	              |        Transport Process        |
@@ -52,7 +51,6 @@ work_dir:   &work_dir "/tmp/ansible"
 
 # Section A - Update the Common Variables.
 
-rac: false
 primary_host: primary-db
 standby_host: standby-db
 db_oracle_user: oracle

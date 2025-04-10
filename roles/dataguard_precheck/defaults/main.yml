@@ -9,5 +9,5 @@ prenfsconfig:
     # !!! update !!!
   subdir: ''
 
-ora_version: "19.3.0.0.0"
+
 ignore_precheck: false
