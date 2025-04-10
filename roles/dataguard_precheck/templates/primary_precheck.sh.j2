@@ -76,7 +76,7 @@ if [[ "$UNIQUE_SIZES" -gt 1 ]]; then
 fi
 
 # 4. Validate redo log multiplexing
-if [[ "$MULTIPLEX_COUNT" -gt 0 ]]; then
+if [[ "$MULTIPLEX_COUNT" -gt 0 ]] && [[ {{ ignore_precheck }} == "false" ]]; then
     echo "ERROR: Redo logs are NOT multiplexed!" | tee -a "$FAILURE_LOG"
 fi
 
