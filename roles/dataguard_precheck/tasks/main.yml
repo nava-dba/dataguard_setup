@@ -24,7 +24,7 @@
   when: dataguarddone.stat.exists
   run_once: true
 
-- name: Checking if Dataguard setup was already done
+- name: Checking if Dataguard precheck was already done
   ansible.builtin.stat:
     path: "{{ done_dir }}/drprecheck.success"
   register: drprecheckdone
