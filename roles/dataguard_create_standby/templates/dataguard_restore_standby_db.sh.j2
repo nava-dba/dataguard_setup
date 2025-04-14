@@ -155,7 +155,7 @@ esac
     echo " duplicate target database for standby from active database NOFILENAMECHECK"
     echo " spfile"
     echo "   parameter_value_convert '${primary_unique_name}','${standby_unique_name}'"
-    echo "   set db_name='${primary_unique_name}'"
+    echo "   set db_name='${primary_db_name}'"
     echo "   set db_create_file_dest='${db_create_file_dest}'"
     echo "   set db_unique_name='${standby_unique_name}'"
     echo "   set db_file_name_convert=${db_file_name_convert}"
