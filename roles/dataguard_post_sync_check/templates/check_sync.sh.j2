@@ -1,21 +1,36 @@
 #!/bin/bash
 
-# Set environment variables manually (Modify as needed)
+# Set environment variables
 export ORACLE_SID={{ databases[database_name].db_sid }}
 export ORACLE_HOME={{ databases[database_name].oracle_db_home }}
 export PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
 
-# Identify if the host is PRIMARY or STANDBY
-if [[ "$(hostname -s)" == "{{ primary_host }}" ]]; then
+# Determine DB role
+DB_ROLE=$(
+sqlplus -s / as sysdba <<EOF
+SET HEADING OFF FEEDBACK OFF VERIFY OFF ECHO OFF
+SELECT DATABASE_ROLE FROM V\$DATABASE;
+EXIT;
+EOF
+)
+
+DB_ROLE=$(echo "$DB_ROLE" | tr -d '[:space:]')
+
+# Based on role, prepare the correct query
+case "$DB_ROLE" in
+  PRIMARY)
     QUERY="SELECT SEQUENCE# FROM V\$LOG WHERE STATUS='CURRENT';"
     SEQ_LABEL="PRIMARY_SEQ"
-elif [[ "$(hostname -s)" == "{{ standby_host }}" ]]; then
+    ;;
+  "PHYSICALSTANDBY")
     QUERY="SELECT SEQUENCE# FROM V\$MANAGED_STANDBY WHERE PROCESS='MRP0';"
     SEQ_LABEL="STANDBY_SEQ"
-else
-    echo "Invalid host. Exiting."
+    ;;
+  *)
+    echo "ERROR: Unknown or unsupported database role: $DB_ROLE"
     exit 1
-fi
+    ;;
+esac
 
 # Run SQL Query
 SEQUENCE_NUM=$(sqlplus -s / as sysdba <<EOF

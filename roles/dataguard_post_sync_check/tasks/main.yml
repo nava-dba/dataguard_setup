@@ -47,7 +47,19 @@
 
 - name: Compare sequence numbers between primary and standby
   ansible.builtin.set_fact:
-    is_synced: "{{ primary_seq.stdout | trim == standby_seq.stdout | trim }}"
+    is_synced: >-
+      {{
+        (primary_seq.stdout | regex_search('[0-9]+') | trim) ==
+        (standby_seq.stdout | regex_search('[0-9]+') | trim)
+      }}
+  when: inventory_hostname == primary_host
+  run_once: true
+
+- name: Display sequence numbers of primary and standby
+  ansible.builtin.debug:
+    msg:
+      - "Primary : {{ primary_seq.stdout }}"
+      - "Standby : {{ standby_seq.stdout }}"
   when: inventory_hostname == primary_host
   run_once: true
 
@@ -63,42 +75,35 @@
 - name: Continue if standby is not in sync
   ansible.builtin.debug:
     msg: "Standby is not in sync with Primary. Proceeding with further actions."
+  run_once: true
 
-- name: Copy Data Guard sync script to primary and standby
+- name: Copy Data Guard sync gap script to primary
   ansible.builtin.template:
     src: sync_gap.sh.j2
     dest: "{{ scripts_dir }}/sync_gap.sh"
     mode: '0755'
+  vars:
+    database_name: "primary"
+  when:
+    - inventory_hostname == primary_host
 
-- name: Execute Data Guard sync check on Primary
+- name: Copy Data Guard sync gap script to standby
+  ansible.builtin.template:
+    src: sync_gap.sh.j2
+    dest: "{{ scripts_dir }}/sync_gap.sh"
+    mode: '0755'
+  vars:
+    database_name: "standby"
+  when:
+    - inventory_hostname == standby_host
+
+- name: Execute Data Guard sync gap on Primary
   ansible.builtin.command:
     cmd: "{{ scripts_dir }}/sync_gap.sh"
   register: primary_output
   failed_when: primary_output.rc != 0
   changed_when: false
   when: inventory_hostname == primary_host
-
-- name: Set fact for Primary output
-  ansible.builtin.set_fact:
-    dg_sync_failed: "{{ primary_output.rc != 0 }}"
-  when: inventory_hostname == primary_host
-
-- name: Fail the play if Data Guard is not in sync
-  ansible.builtin.fail:
-    msg: "Dataguard not in sync. Please check the error and fix it manually."
-  when:
-    - inventory_hostname == primary_host
-    - primary_output.rc is defined
-    - primary_output.rc != 0
-  run_once: true
-
-- name: End the play if Data Guard is not in sync
-  ansible.builtin.meta: end_play
-  when:
-    - "'primary_output' in hostvars[primary_host]"
-    - "hostvars[primary_host].primary_output.rc is defined"
-    - "hostvars[primary_host].primary_output.rc != 0"
-  run_once: true
 
 - name: Extract Primary Sequence Number
   ansible.builtin.set_fact:
@@ -114,12 +119,13 @@
     - inventory_hostname == primary_host
     - primary_output.stdout is defined
 
-- name: Execute Data Guard sync check on Standby
+- name: Execute Data Guard sync gap on Standby
   ansible.builtin.command:
     cmd: "{{ scripts_dir }}/sync_gap.sh"
   register: standby_output
-  when: inventory_hostname == standby_host
+  failed_when: standby_output.rc != 0
   changed_when: false
+  when: inventory_hostname == standby_host
 
 - name: Extract Standby Sequence Number
   ansible.builtin.set_fact:
@@ -179,7 +185,7 @@
   when: inventory_hostname == standby_host
   changed_when: false
 
-- name: Debug Raw SQL Output
+- name: Debug SQL Output
   ansible.builtin.debug:
     var: dg_sync_status.stdout_lines
   when: inventory_hostname == standby_host

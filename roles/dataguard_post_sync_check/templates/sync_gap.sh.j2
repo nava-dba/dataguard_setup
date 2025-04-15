@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Set environment variables
+export ORACLE_SID={{ databases[database_name].db_sid }}
+export ORACLE_HOME={{ databases[database_name].oracle_db_home }}
+export PATH={{ databases[database_name].oracle_db_home }}/bin:$PATH
+
 MASTER_LOG="{{ done_dir }}/dg_sync.log"
 FAILURE_LOG="{{ done_dir }}/dg_sync_failure.log"
 
@@ -7,12 +12,18 @@ FAILURE_LOG="{{ done_dir }}/dg_sync_failure.log"
 > "$MASTER_LOG"
 > "$FAILURE_LOG"
 
-if [[ "$(hostname -s)" == "{{ primary_host }}" ]]; then
+# Determine DB role
+DB_ROLE=$(
+sqlplus -s / as sysdba <<EOF
+SET HEADING OFF FEEDBACK OFF ECHO OFF
+SELECT DATABASE_ROLE FROM V\$DATABASE;
+EXIT;
+EOF
+)
 
-    # Primary
-    export ORACLE_SID={{ databases.primary.db_sid }}
-    export ORACLE_HOME={{ databases.primary.oracle_db_home }}
-    export PATH={{ databases.primary.oracle_db_home }}/bin:$PATH
+DB_ROLE=$(echo "$DB_ROLE" | tr -d '[:space:]')
+
+if [[ "$DB_ROLE" == "PRIMARY" ]]; then
 
     sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
@@ -48,12 +59,7 @@ SQL
         exit 1
     fi
 
-elif [[ "$(hostname -s)" == "{{ standby_host }}" ]]; then
-
-    # Standby
-    export ORACLE_SID={{ databases.standby.db_sid }}
-    export ORACLE_HOME={{ databases.standby.oracle_db_home }}
-    export PATH={{ databases.standby.oracle_db_home }}/bin:$PATH
+elif [[ "$DB_ROLE" == "PHYSICALSTANDBY" ]]; then
 
     sqlplus -s / as sysdba <<SQL | tee -a "$MASTER_LOG"
 SET HEADING OFF
@@ -110,6 +116,8 @@ EXIT;
 SQL
 
     STANDBY_SEQ=$(grep "STANDBY_SEQ:" "$MASTER_LOG" | awk -F '[:,]' '{print $2}')
+else
+    echo "ERROR: Database ROLE should be PRIMAY or PHYSICAL STANDBY" | tee -a "$FAILURE_LOG"
 fi
 
 # Check for failures and exit accordingly
