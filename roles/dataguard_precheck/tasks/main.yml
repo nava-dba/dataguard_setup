@@ -33,7 +33,7 @@
 - name: Copy directory check script
   ansible.builtin.template:
     src: files/dir_check.sh
-    dest: "{{ scripts_dir }}/dir_check.sh '{{ databases.standby.oracle_db_base }}/admin'"
+    dest: "{{ scripts_dir }}/dir_check.sh"
     mode: '0770'
   vars:
     database_name: "standby"
@@ -43,7 +43,7 @@
     - grid_user != db_oracle_user
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
-  ansible.builtin.command: "{{ scripts_dir }}/dir_check.sh"
+  ansible.builtin.command: "{{ scripts_dir }}/dir_check.sh '{{ databases.standby.oracle_db_base }}/admin'"
   register: dir_check_output
   failed_when: dir_check_output.rc != 0
   changed_when: false
