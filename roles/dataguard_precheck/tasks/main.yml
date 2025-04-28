@@ -39,6 +39,7 @@
         path: "{{ databases.standby.oracle_db_base }}/admin"
       register: admin_dr_dir
       when:
+        - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
         - grid_user != db_oracle_user
 
