@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 MASTER_LOG="{{ done_dir }}/dir_check.log"
 FAILURE_LOG="{{ done_dir }}/dir_check_fail.log"
 
@@ -14,11 +13,14 @@ dir_to_check="$1"
 if [ -d "$dir_to_check" ]; then
     echo "Directory exists." | tee -a "$MASTER_LOG"
 
+    # Get the directory's permission in octal format
+    dir_perm=$(stat -c "%a" "$dir_to_check")
+
     # Check if the directory has read and write permissions
-    if [ -r "$dir_to_check" ] && [ -w "$dir_to_check" ]; then
-        echo "Directory has read and write permissions." | tee -a "$MASTER_LOG"
+    if [ "$dir_perm" -eq 755 ]; then
+        echo "Directory has read and write permissions" | tee -a "$MASTER_LOG"
     else
-        echo "Directory does not have read and write permissions." | tee -a "$FAILURE_LOG"
+        echo "Directory permissions are not correct . Current permissions: $dir_perm . Please refer readme prerequisites section for more details" | tee -a "$FAILURE_LOG"
     fi
 else
     echo "Directory does not exist." | tee -a "$FAILURE_LOG"
