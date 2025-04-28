@@ -55,7 +55,7 @@
 
 - name: End play if missing read/write permissions on $ORALCE_BASE/admin directory
   ansible.builtin.meta: end_play
-  when: 
+  when:
     - admin_dr_dir.stat.exists is defined
     - (
         not admin_dr_dir.stat.exists or
