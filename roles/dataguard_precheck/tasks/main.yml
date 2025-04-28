@@ -32,7 +32,7 @@
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
   ansible.builtin.stat:
-    path: "{{ databases.standby.oracle_db_base }}/admin"
+    path: "/u01/base/admin"
   register: admin_dr_dir
   when:
     - inventory_hostname == standby_host
