@@ -46,8 +46,10 @@
       and have read/write permission. Found owner={{ admin_dr_dir.stat.pw_name }}, mode={{ admin_dr_dir.stat.mode }}.
       Refer Readme Prerequisites.
   when:
-    - not (admin_dr_dir.stat.mode is search('6..') or admin_dr_dir.stat.mode is search('7..'))
     - inventory_hostname == standby_host
+    - not drprecheckdone.stat.exists
+    - grid_user != db_oracle_user
+    - not (admin_dr_dir.stat.mode is search('6..') or admin_dr_dir.stat.mode is search('7..'))
 
 - name: Check SSH equivalence from oracle to grid on standby host
   when:
