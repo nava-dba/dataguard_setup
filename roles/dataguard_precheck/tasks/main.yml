@@ -32,7 +32,6 @@
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
   delegate_to: "{{ standby_host }}"
-  run_once: true
   block:
     - name: Check $ORACLE_BASE/admin directory
       ansible.builtin.stat:
