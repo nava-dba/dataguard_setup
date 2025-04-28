@@ -40,13 +40,12 @@
     - grid_user != db_oracle_user
 
 - name: Debug admin_dr_dir variable
-  debug:
+  ansible.builtin.debug:
     var: admin_dr_dir , admin_dr_dir.stat.pw_name , admin_dr_dir.stat.mode[0]|int(base=8)
-  when: 
+  when:
     - inventory_hostname == standby_host
-    - admin_dr_dir is defined
   run_once: true
-  
+
 - name: Fail if directory missing, wrong owner, or missing read/write permissions
   ansible.builtin.fail:
     msg: >
