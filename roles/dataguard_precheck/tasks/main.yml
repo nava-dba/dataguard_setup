@@ -32,7 +32,7 @@
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
   ansible.builtin.stat:
-    path: "/u01/base/admin"
+    path: "{{ databases.standby.oracle_db_base }}/admin"
   register: admin_dr_dir
   when:
     - inventory_hostname == standby_host
@@ -44,7 +44,7 @@
     var: admin_dr_dir , admin_dr_dir.stat.pw_name , admin_dr_dir.stat.mode[0]|int(base=8)
   when:
     - inventory_hostname == standby_host
-  run_once: true
+
 
 - name: Fail if directory missing, wrong owner, or missing read/write permissions
   ansible.builtin.fail:
@@ -59,7 +59,7 @@
       admin_dr_dir.stat.pw_name != db_oracle_user or
       admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
     )
-  run_once: true
+
 
 - name: End play if missing read/write permissions on $ORACLE_BASE/admin directory
   ansible.builtin.meta: end_play
@@ -71,7 +71,7 @@
       admin_dr_dir.stat.pw_name != db_oracle_user or
       admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
     )
-  run_once: true
+
 
 - name: Check SSH equivalence from oracle to grid on standby host
   when:
