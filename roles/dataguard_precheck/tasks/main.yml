@@ -30,10 +30,9 @@
   register: drprecheckdone
   when: inventory_hostname == standby_host
 
-# Check if {{ oracle_db_base }}/admin directory exists, is owned by oracle, and has read/write permissions
-- name: Check $ORALE_BASE/admin directory exists, is owned by oracle, and has read/write permissions
+- name: Check $ORALCE_BASE/admin directory exists, is owned by oracle, and has read/write permissions
   ansible.builtin.stat:
-    path: "{{ oracle_db_base }}/admin"
+    path: "{{ databases.standby.oracle_db_base }}/admin"
   register: admin_dr_dir
   when:
     - inventory_hostname == standby_host
