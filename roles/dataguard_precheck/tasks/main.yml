@@ -31,35 +31,40 @@
   when: inventory_hostname == standby_host
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
-  ansible.builtin.stat:
-    path: "{{ databases.standby.oracle_db_base }}/admin"
-  register: admin_dr_dir
-  when:
-    - inventory_hostname == standby_host
-    - not drprecheckdone.stat.exists
-    - grid_user != db_oracle_user
+  block:
+    - name: Check $ORACLE_BASE/admin directory
+      ansible.builtin.stat:
+        path: "{{ databases.standby.oracle_db_base }}/admin"
+      register: admin_dr_dir
+      when:
+        - inventory_hostname == standby_host
+        - not drprecheckdone.stat.exists
+        - grid_user != db_oracle_user
 
-- name: Debug admin_dr_dir variable
-  ansible.builtin.debug:
-    var: admin_dr_dir , admin_dr_dir.stat.pw_name , admin_dr_dir.stat.mode[0]|int(base=8)
-  when:
-    - inventory_hostname == standby_host
+    - name: Set fact indicating pre-check failure
+      ansible.builtin.set_fact:
+        precheck_failed: true
+      when: >
+        admin_dr_dir.stat.exists is defined and
+        (
+          not admin_dr_dir.stat.exists or
+          admin_dr_dir.stat.pw_name != db_oracle_user or
+          admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
+        )
 
-
-- name: Fail if directory missing, wrong owner, or missing read/write permissions
-  ansible.builtin.fail:
-    msg: >
-      Directory {{ databases.standby.oracle_db_base }}/admin must exist, be owned by {{ db_oracle_user }},
-      and have read/write permission. Found owner={{ admin_dr_dir.stat.pw_name }}, mode={{ admin_dr_dir.stat.mode }}. Refer Readme Prerequisites.
-  when: >
-    inventory_hostname == standby_host and
-    admin_dr_dir.stat.exists is defined and
-    (
-      not admin_dr_dir.stat.exists or
-      admin_dr_dir.stat.pw_name != db_oracle_user or
-      admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
-    )
-
+    - name: Fail and end play if pre-check failed
+      block:
+        - name: Fail with error message
+          ansible.builtin.fail:
+            msg: >
+              Pre-check failed on {{ inventory_hostname }}: Directory {{ databases.standby.oracle_db_base }}/admin must exist,
+              be owned by {{ db_oracle_user }}, and have read/write permission.Found owner={{ admin_dr_dir.stat.pw_name }}, mode={{ admin_dr_dir.stat.mode }}.
+              Refer Readme Prerequisites.
+        - name: End the play
+          ansible.builtin.meta: end_play
+      when: precheck_failed | default(false)
+  delegate_to: "{{ standby_host }}"
+  run_once: true
 
 - name: End play if missing read/write permissions on $ORACLE_BASE/admin directory
   ansible.builtin.meta: end_play
@@ -71,7 +76,6 @@
       admin_dr_dir.stat.pw_name != db_oracle_user or
       admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
     )
-
 
 - name: Check SSH equivalence from oracle to grid on standby host
   when:
