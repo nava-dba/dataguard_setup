@@ -47,6 +47,7 @@
   register: dir_check_output
   failed_when: dir_check_output.rc != 0
   changed_when: false
+  any_errors_fatal: true
   when:
     - inventory_hostname == standby_host
     - not drprecheckdone.stat.exists
