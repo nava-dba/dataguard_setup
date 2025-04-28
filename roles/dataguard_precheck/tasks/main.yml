@@ -54,16 +54,21 @@
       admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
     )
 
+- name: Set fact for admin_dr_dir.stat on standby and primary
+  ansible.builtin.set_fact:
+    admin_dr_dir_stat: "{{ admin_dr_dir.stat }}"
+  when: inventory_hostname == standby_host
+
 - name: End play if missing read/write permissions on $ORACLE_BASE/admin directory
   ansible.builtin.meta: end_play
   when: >
-    inventory_hostname == standby_host and
     admin_dr_dir.stat.exists is defined and
     (
       not admin_dr_dir.stat.exists or
       admin_dr_dir.stat.pw_name != db_oracle_user or
       admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
     )
+  run_once: true
 
 - name: Check SSH equivalence from oracle to grid on standby host
   when:
