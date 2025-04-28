@@ -31,13 +31,14 @@
   when: inventory_hostname == standby_host
 
 - name: Check $ORACLE_BASE/admin directory exists, is owned by oracle user, and has read/write permissions
+  delegate_to: "{{ standby_host }}"
+  run_once: true
   block:
     - name: Check $ORACLE_BASE/admin directory
       ansible.builtin.stat:
         path: "{{ databases.standby.oracle_db_base }}/admin"
       register: admin_dr_dir
       when:
-        - inventory_hostname == standby_host
         - not drprecheckdone.stat.exists
         - grid_user != db_oracle_user
 
@@ -63,8 +64,6 @@
         - name: End the play
           ansible.builtin.meta: end_play
       when: precheck_failed | default(false)
-  delegate_to: "{{ standby_host }}"
-  run_once: true
 
 - name: End play if missing read/write permissions on $ORACLE_BASE/admin directory
   ansible.builtin.meta: end_play
