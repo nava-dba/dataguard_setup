@@ -45,9 +45,12 @@
       Directory {{ databases.standby.oracle_db_base }}/admin must exist, be owned by {{ db_oracle_user }},
       and have read/write permission. Found owner={{ admin_dr_dir.stat.pw_name }}, mode={{ admin_dr_dir.stat.mode }}.
   when: >
-    admin_dr_dir.stat.exists is not defined or not admin_dr_dir.stat.exists or
-    admin_dr_dir.stat.pw_name != db_oracle_user or
-    admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
+    admin_dr_dir is defined and
+    (
+      not admin_dr_dir.stat.exists or
+      admin_dr_dir.stat.pw_name != db_oracle_user or
+      admin_dr_dir.stat.mode[0]|int(base=8) not in [6,7]
+    )
 
 - name: Check SSH equivalence from oracle to grid on standby host
   when:
