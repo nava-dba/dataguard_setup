@@ -17,7 +17,8 @@ if [ -d "$dir_to_check" ]; then
     dir_perm=$(stat -c "%a" "$dir_to_check")
 
     # Check if the directory has read and write permissions
-    if [ "$dir_perm" -eq 755 ]; then
+    perm_string=$(ls -ld "$dir_to_check" | awk '{print $1}')
+    if [ "$perm_string" = "drwxr-xr-x" ]; then
         echo "Directory has read and write permissions" | tee -a "$MASTER_LOG"
     else
         echo "Directory permissions are not correct . Current permissions: $dir_perm . Please refer readme prerequisites section for more details" | tee -a "$FAILURE_LOG"
