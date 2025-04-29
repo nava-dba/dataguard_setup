@@ -11,17 +11,11 @@ dir_to_check="$1"
 
 # Check if the directory exists
 if [ -d "$dir_to_check" ]; then
-    echo "Directory exists." | tee -a "$MASTER_LOG"
-
-    # Get the directory's permission in octal format
-    dir_perm=$(stat -c "%a" "$dir_to_check")
-
-    # Check if the directory has read and write permissions
-    perm_string=$(ls -ld "$dir_to_check" | awk '{print $1}')
-    if [ "$perm_string" = "drwx------" ]; then
-        echo "Directory has read and write permissions" | tee -a "$MASTER_LOG"
+    echo "$dir_to_check Directory exists." | tee -a "$MASTER_LOG"
+    if [ -r "{{ databases.standby.oracle_db_base }}/admin" ] && [ -w "{{ databases.standby.oracle_db_base }}/admin" ] && [ -x "{{ databases.standby.oracle_db_base }}/admin" ]; then
+        echo "$dir_to_check Directory has read and write & execute permissions" | tee -a "$MASTER_LOG"
     else
-        echo "Directory permissions are not correct . Current permissions: $dir_perm . Please refer readme prerequisites section for more details" | tee -a "$FAILURE_LOG"
+        echo "$dir_to_check Directory permissions are not correct .  Please refer readme prerequisites section for more details" | tee -a "$FAILURE_LOG"
     fi
 else
     echo "Directory does not exist." | tee -a "$FAILURE_LOG"
